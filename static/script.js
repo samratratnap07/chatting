@@ -3,40 +3,46 @@ document.addEventListener("DOMContentLoaded", function () {
     const messageInput = document.getElementById("message");
     const chatBox = document.getElementById("chat-box");
 
-    // Handle sending messages
+    // Send message
     messageForm.addEventListener("submit", function (event) {
         event.preventDefault();
-
         const msg = messageInput.value.trim();
         if (msg === "") return;
+
+        // Show instantly in UI
+        appendMessage("You", msg, new Date().toLocaleTimeString());
+        messageInput.value = "";
 
         fetch("/send", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ message: msg })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                messageInput.value = "";
-                loadMessages(); // Reload messages instantly
-            }
-        });
+        }).then(response => response.json())
+          .then(data => {
+              if (!data.success) {
+                  console.error("Message send failed");
+              }
+          });
     });
 
-    // Function to load messages from the server
+    // Append message to chat
+    function appendMessage(sender, text, time) {
+        const div = document.createElement("div");
+        div.classList.add("msg", sender === "Nick" ? "nick" : sender === "You" ? "nick" : "saisha");
+        div.innerHTML = `<strong>${sender}:</strong> ${text}<div class="timestamp">${time}</div>`;
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // Load messages from server
     function loadMessages() {
         fetch("/messages")
             .then(response => response.json())
             .then(data => {
                 chatBox.innerHTML = "";
                 data.messages.forEach(msg => {
-                    const div = document.createElement("div");
-                    div.classList.add("chat-message");
-                    div.textContent = msg;
-                    chatBox.appendChild(div);
+                    appendMessage(msg[1], msg[2], msg[3]);
                 });
-                chatBox.scrollTop = chatBox.scrollHeight;
             });
     }
 
