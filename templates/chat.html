@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat - Nick & Saisha</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #000;
+            color: white;
+        }
+        .top-bar {
+            background: #ff0090;
+            padding: 15px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            position: relative;
+        }
+        .chat-box {
+            padding: 20px;
+            height: 70vh;
+            overflow-y: scroll;
+            background: #111;
+        }
+        .msg {
+            margin: 10px 0;
+            padding: 10px 15px;
+            border-radius: 15px;
+            max-width: 60%;
+            clear: both;
+        }
+        .nick {
+            background: #333;
+            float: left;
+        }
+        .saisha {
+            background: #ff0090;
+            float: right;
+        }
+        .timestamp {
+            font-size: 10px;
+            opacity: 0.6;
+            margin-top: 5px;
+            text-align: right;
+        }
+        .form-box {
+            padding: 15px;
+            background: #000;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            display: flex;
+        }
+        .form-box input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+        .form-box input[type="submit"] {
+            background: #ff0090;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            margin-left: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .logout {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 14px;
+        }
+        .logout a {
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .chat-box {
+                height: 60vh;
+                padding: 10px;
+            }
+            .form-box input[type="text"] {
+                font-size: 14px;
+            }
+            .top-bar {
+                font-size: 20px;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        Nick & Saisha 💬
+        <div class="logout"><a href="/logout">Logout</a></div>
+    </div>
+
+    <div class="chat-box" id="chat-box">
+        {% for msg in messages %}
+            <div class="msg {% if msg[1] == 'Nick' %}nick{% else %}saisha{% endif %}">
+                <strong>{{ msg[1] }}:</strong> {{ msg[2] }}
+                <div class="timestamp">{{ msg[3] }}</div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <form class="form-box" id="message-form">
+        <input type="text" id="message" name="message" placeholder="Type a message..." autocomplete="off" required>
+        <input type="submit" value="Send">
+    </form>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const messageForm = document.getElementById("message-form");
+            const messageInput = document.getElementById("message");
+            const chatBox = document.getElementById("chat-box");
+
+            // Scroll to bottom
+            function scrollToBottom() {
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+
+            // Load messages from server
+            function loadMessages() {
+                fetch("/messages")
+                    .then(response => response.json())
+                    .then(data => {
+                        chatBox.innerHTML = "";
+                        data.messages.forEach(msg => {
+                            const div = document.createElement("div");
+                            div.classList.add("msg");
+                            div.classList.add(msg.sender === "Nick" ? "nick" : "saisha");
+                            div.innerHTML = `<strong>${msg.sender}:</strong> ${msg.text}
+                                             <div class="timestamp">${msg.time}</div>`;
+                            chatBox.appendChild(div);
+                        });
+                        scrollToBottom();
+                    });
+            }
+
+            // Send message instantly without loading delay
+            messageForm.addEventListener("submit", function (event) {
+                event.preventDefault();
+                const msg = messageInput.value.trim();
+                if (msg === "") return;
+
+                fetch("/send", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: msg })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        messageInput.value = "";
+                        loadMessages(); // instantly refresh after sending
+                    }
+                });
+            });
+
+            // Auto refresh messages every 2 sec
+            setInterval(loadMessages, 2000);
+            loadMessages();
+        });
+    </script>
+
+</body>
+</html>
