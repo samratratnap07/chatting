@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat - Nick & Saisha</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #000;
+            color: white;
+        }
+        .top-bar {
+            background: #ff0090;
+            padding: 15px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .chat-box {
+            padding: 20px;
+            height: 70vh;
+            overflow-y: scroll;
+            background: #111;
+        }
+        .msg {
+            margin: 10px 0;
+            padding: 10px 15px;
+            border-radius: 15px;
+            max-width: 60%;
+            clear: both;
+        }
+        .nick {
+            background: #333;
+            float: left;
+        }
+        .saisha {
+            background: #ff0090;
+            float: right;
+        }
+        .timestamp {
+            font-size: 10px;
+            opacity: 0.6;
+            margin-top: 5px;
+            text-align: right;
+        }
+        .form-box {
+            padding: 15px;
+            background: #000;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            display: flex;
+        }
+        .form-box input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+        .form-box input[type="submit"] {
+            background: #ff0090;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            margin-left: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .logout {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 14px;
+        }
+        .logout a {
+            color: white;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        Nick & Saisha 💬
+        <div class="logout"><a href="/logout">Logout</a></div>
+    </div>
+
+    <div class="chat-box">
+        {% for msg in messages %}
+            <div class="msg {% if msg[1] == 'Nick' %}nick{% else %}saisha{% endif %}">
+                <strong>{{ msg[1] }}:</strong> {{ msg[2] }}
+                <div class="timestamp">{{ msg[3] }}</div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <form class="form-box" method="POST" action="/send">
+        <input type="text" name="message" placeholder="Type a message..." autocomplete="off" required>
+        <input type="submit" value="Send">
+    </form>
+<script>
+    // Auto scroll to bottom on load
+    window.onload = function() {
+        var chatBox = document.querySelector(".chat-box");
+        chatBox.scrollTop = chatBox.scrollHeight;
+    };
+</script>
+
+</body>
+</html>

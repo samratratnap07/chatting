@@ -1,0 +1,9 @@
+/* Optional external CSS file */
+.chat-box {
+    scroll-behavior: smooth;
+}
+
+/* Emoji font fallback (most emojis are supported by browser by default) */
+body {
+    font-family: 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+}
