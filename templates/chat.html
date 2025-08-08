@@ -15,11 +15,12 @@
             text-align: center;
             font-size: 24px;
             font-weight: bold;
+            position: relative;
         }
         .chat-box {
             padding: 20px;
             height: 70vh;
-            overflow-y: scroll;
+            overflow-y: auto;
             background: #111;
         }
         .msg {
@@ -58,7 +59,7 @@
             border-radius: 10px;
             font-size: 16px;
         }
-        .form-box input[type="submit"] {
+        .form-box button {
             background: #ff0090;
             border: none;
             color: white;
@@ -77,6 +78,17 @@
             color: white;
             text-decoration: none;
         }
+
+        /* Responsive layout */
+        @media (max-width: 768px) {
+            .chat-box {
+                height: 65vh;
+                font-size: 14px;
+            }
+            .form-box input[type="text"] {
+                font-size: 14px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -86,26 +98,15 @@
         <div class="logout"><a href="/logout">Logout</a></div>
     </div>
 
-    <div class="chat-box">
-        {% for msg in messages %}
-            <div class="msg {% if msg[1] == 'Nick' %}nick{% else %}saisha{% endif %}">
-                <strong>{{ msg[1] }}:</strong> {{ msg[2] }}
-                <div class="timestamp">{{ msg[3] }}</div>
-            </div>
-        {% endfor %}
+    <div class="chat-box" id="chat-box">
+        <!-- Messages load dynamically here -->
     </div>
 
-    <form class="form-box" method="POST" action="/send">
-        <input type="text" name="message" placeholder="Type a message..." autocomplete="off" required>
-        <input type="submit" value="Send">
+    <form class="form-box" id="message-form">
+        <input type="text" id="message" name="message" placeholder="Type a message..." autocomplete="off" required>
+        <button type="submit">Send</button>
     </form>
-<script>
-    // Auto scroll to bottom on load
-    window.onload = function() {
-        var chatBox = document.querySelector(".chat-box");
-        chatBox.scrollTop = chatBox.scrollHeight;
-    };
-</script>
 
+    <script src="/static/script.js"></script>
 </body>
 </html>
