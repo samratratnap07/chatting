@@ -4,13 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nick & Saisha Chat</title>
-    <!-- External CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <!-- Blurred colorful lights background -->
-    <div class="bg-blur-lights"></div>
 
+    <div class="bg-blur-lights"></div>
     <header>Nick & Saisha Chat</header>
 
     <div class="chat-box" id="chat-box"></div>
@@ -30,17 +28,62 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
+        function createMsgActions(msgDiv) {
+            const actionsPopup = document.createElement("div");
+            actionsPopup.className = "msg-actions";
+            actionsPopup.innerHTML = `
+                <button onclick="alert('Reply feature coming soon!')">Reply</button>
+                <button onclick="alert('Forward feature coming soon!')">Forward</button>
+                <button onclick="copyToClipboard('${msgDiv.querySelector('.bubble').innerText.replace(/'/g, "\\'")}')">Copy</button>
+                <button onclick="alert('Delete feature coming soon!')">Delete</button>
+                <button onclick="closeActions(this)">Close</button>
+            `;
+            msgDiv.appendChild(actionsPopup);
+            return actionsPopup;
+        }
+
+        function closeActions(btn) {
+            btn.parentNode.classList.remove('show');
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text);
+            alert('Message copied!');
+        }
+
         function loadMessages() {
             fetch("/messages")
                 .then(res => res.json())
                 .then(data => {
                     chatBox.innerHTML = "";
-                    data.messages.forEach(msg => {
-                        let div = document.createElement("div");
-                        div.classList.add("message");
-                        div.classList.add(msg.sender === username ? "sent" : "received");
-                        div.innerHTML = `<strong>${msg.sender}:</strong> ${msg.message} <br><small>${msg.timestamp}</small>`;
-                        chatBox.appendChild(div);
+                    data.messages.forEach((msg) => {
+                        let msgDiv = document.createElement("div");
+                        msgDiv.classList.add("message");
+                        msgDiv.classList.add(msg.sender === username ? "sent" : "received");
+
+                        // Instagram style bubble
+                        msgDiv.innerHTML = `
+                            <div class="username">${msg.sender}</div>
+                            <div class="bubble">${msg.message}</div>
+                            <div class="timestamp">${msg.timestamp}</div>
+                        `;
+
+                        msgDiv.oncontextmenu = (e) => { e.preventDefault(); }
+                        msgDiv.onmousedown = (e) => {
+                            if (e.button === 0 || e.button === 2) {
+                                msgDiv.longPressTimer = setTimeout(() => {
+                                    document.querySelectorAll(".msg-actions.show").forEach(el => el.classList.remove("show"));
+                                    let actions = msgDiv.querySelector(".msg-actions");
+                                    if (!actions) actions = createMsgActions(msgDiv);
+                                    actions.classList.add('show');
+                                }, 370);
+                            }
+                        };
+                        msgDiv.onmouseup = msgDiv.onmouseleave = () => {
+                            if(msgDiv.longPressTimer) clearTimeout(msgDiv.longPressTimer);
+                        };
+
+                        chatBox.appendChild(msgDiv);
                     });
                     scrollToBottom();
                 });
@@ -64,7 +107,6 @@
             });
         });
 
-        // Auto-refresh every 2 sec
         setInterval(loadMessages, 2000);
         loadMessages();
     </script>
