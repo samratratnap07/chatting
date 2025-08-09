@@ -8,80 +8,112 @@
 </head>
 <body>
     <div class="bg-blur-lights"></div>
-    <header>Nick & Saisha Chat</header>
-
-    <div class="main-chat-layout">
+    <header>
+        <span class="header-title">Nick & Saisha Chat</span>
+        <form method="POST" action="/logout" style="margin:0;display:inline;">
+            <button type="submit" class="logout-btn">Logout</button>
+        </form>
+    </header>
+    <div class="main-chat-wrapper">
         <div class="chat-box" id="chat-box"></div>
-
         <form id="chat-form">
             <input type="text" id="message" placeholder="Type a message..." autocomplete="off" required>
             <button type="submit">Send</button>
         </form>
     </div>
-
+    <div id="edit-popup" style="display:none"></div>
     <script>
         const chatBox = document.getElementById("chat-box");
         const form = document.getElementById("chat-form");
         const messageInput = document.getElementById("message");
         const username = "{{ username }}";
+        let editingMsgId = null;
 
         function scrollToBottom() {
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        function createMsgActions(msgDiv) {
-            // Remove existing if any
-            msgDiv.querySelectorAll('.msg-actions').forEach(el => el.remove());
+        // UI: Create action/popup menu
+        function createMsgActions(msgDiv, msgId, msgText) {
+            msgDiv.querySelectorAll(".msg-actions").forEach(el=>el.remove());
             const actionsPopup = document.createElement("div");
             actionsPopup.className = "msg-actions";
             actionsPopup.innerHTML = `
-                <button onclick="replyMsg('${msgDiv.querySelector('.bubble').innerText.replace(/'/g,"\\'")}')">Reply</button>
-                <button onclick="forwardMsg('${msgDiv.querySelector('.bubble').innerText.replace(/'/g,"\\'")}')">Forward</button>
-                <button onclick="copyToClipboard('${msgDiv.querySelector('.bubble').innerText.replace(/'/g,"\\'")}')">Copy</button>
-                <button onclick="deleteMsg(this)">Delete</button>
-                <button onclick="closeActions(this)">Close</button>
+                <button onclick="editMsgUI(${msgId}, this)">Edit</button>
+                <button onclick="copyToClipboard('${msgText.replace(/'/g,"\\'")}')">Copy</button>
+                <button onclick="deleteMsg(${msgId}, this)">Delete</button>
             `;
             msgDiv.appendChild(actionsPopup);
-            setTimeout(()=>actionsPopup.classList.add('show'),20);
-            // Close popup if click is anywhere outside
-            window.onclick = function(event) {
-                if (!msgDiv.contains(event.target)) {
-                    actionsPopup.classList.remove('show');
-                }
-            };
+            setTimeout(() => actionsPopup.classList.add('show'), 15);
             return actionsPopup;
         }
 
-        function closeActions(btn) {
-            btn.parentNode.classList.remove('show');
-        }
+        // Message menu will NOT autoclose by itself; only close when user clicks elsewhere:
+        document.body.addEventListener('click', function(e){
+            document.querySelectorAll(".msg-actions.show").forEach(el => {
+                if(!el.parentNode.contains(e.target)) el.classList.remove("show");
+            });
+            // Edit popup autoclose if click background
+            const editPopup = document.getElementById('edit-popup');
+            if(editPopup.style.display=='flex' && e.target===editPopup) editPopup.style.display='none';
+        });
 
+        function editMsgUI(msgId, btn) {
+            document.querySelectorAll(".msg-actions.show").forEach(el=>el.classList.remove("show"));
+            let msgBubble = btn.closest('.message').querySelector('.bubble');
+            let oldText = msgBubble.innerText;
+            const editPopup = document.getElementById('edit-popup');
+            editPopup.style.display='flex';
+            editPopup.innerHTML = `
+                <div class="edit-popup">
+                    <div class="edit-box">
+                      <b>Edit Message</b>
+                      <input type="text" id="edit-msg-input" value="${oldText.replace(/"/g,'&quot;')}">
+                      <div class="actions">
+                        <button onclick="submitEdit(${msgId})">Save</button>
+                        <button onclick="document.getElementById('edit-popup').style.display='none'">Cancel</button>
+                      </div>
+                    </div>
+                </div>
+            `;
+            setTimeout(() => document.getElementById('edit-msg-input').focus(),60);
+        }
+        function submitEdit(msgId){
+            const newText = document.getElementById('edit-msg-input').value;
+            // Dummy Ajax request; replace with backend logic
+            fetch("/edit", {
+                method:"POST",
+                headers: {"Content-Type":"application/json"},
+                body: JSON.stringify({msg_id:msgId, new_text:newText})
+            }).then(r=>r.json())
+             .then(res=>{
+                document.getElementById('edit-popup').style.display='none';
+                loadMessages();
+             });
+        }
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text);
             alert('Message copied!');
         }
-        function replyMsg(msg) {
-            messageInput.value = "@" + msg + "\n";
-            messageInput.focus();
-            closeOptionsPopups();
-        }
-        function forwardMsg(msg) {
-            alert('Forward feature coming soon!');
-            closeOptionsPopups();
-        }
-        function deleteMsg(btn) {
-            btn.parentNode.parentNode.remove(); // Only removes from DOM. Real delete needs backend.
-        }
-        function closeOptionsPopups(){
-            document.querySelectorAll('.msg-actions.show').forEach(el=>el.classList.remove('show'));
+        function deleteMsg(msgId, btn){
+            // Dummy function! Backend required.
+            fetch("/delete",{
+                method:"POST",
+                headers: {"Content-Type":"application/json"},
+                body: JSON.stringify({msg_id:msgId})
+            }).then(r=>r.json())
+              .then(res=>{
+                loadMessages();
+              });
         }
 
+        // Render messages (sample ids used for demo)
         function loadMessages() {
             fetch("/messages")
                 .then(res => res.json())
                 .then(data => {
                     chatBox.innerHTML = "";
-                    data.messages.forEach((msg) => {
+                    data.messages.forEach((msg, idx) => {
                         let msgDiv = document.createElement("div");
                         msgDiv.classList.add("message");
                         msgDiv.classList.add(msg.sender === username ? "sent" : "received");
@@ -90,22 +122,17 @@
                             <div class="bubble">${msg.message}</div>
                             <div class="timestamp">${msg.timestamp}</div>
                         `;
-
-                        // Enable single-click to open options instead of long-press
-                        msgDiv.onclick = (e) => {
-                            // Only trigger on non-popup button click
-                            if(!e.target.classList.contains('bubble')) return;
-                            closeOptionsPopups();
-                            let actions = msgDiv.querySelector(".msg-actions");
-                            if (!actions) actions = createMsgActions(msgDiv);
-                            actions.classList.add('show');
+                        const msgId = msg.id !== undefined ? msg.id : idx; // using idx if no id field
+                        msgDiv.onclick = function(e){
+                            // Open popup menu on single click
+                            createMsgActions(msgDiv, msgId, msg.message);
+                            e.stopPropagation();
                         };
                         chatBox.appendChild(msgDiv);
                     });
                     scrollToBottom();
                 });
         }
-
         form.addEventListener("submit", e => {
             e.preventDefault();
             const text = messageInput.value.trim();
@@ -123,8 +150,6 @@
                 }
             });
         });
-
-        // Refresh messages every 2 seconds
         setInterval(loadMessages, 2000);
         loadMessages();
     </script>
