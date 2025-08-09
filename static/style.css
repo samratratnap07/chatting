@@ -32,24 +32,47 @@ body {
     background: radial-gradient(circle, #5a4cff 0%, transparent 70%);
 }
 header {
-    background: linear-gradient(100deg, #5a4cff, #ff0090 70%);
-    padding: 18px 0 13px 0;
+    background: linear-gradient(100deg,#5a4cff,#ff0090 70%);
+    padding: 18px 24px 13px 18px;
     color: white;
-    text-align: center;
     font-size: 24px;
     font-family: 'Quicksand', Arial, sans-serif;
     font-weight: 600;
     letter-spacing: 2px;
+    position: relative;
     z-index: 2;
     box-shadow: 0 2px 15px #ff009044;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
-.main-chat-layout {
+.header-title {
     flex: 1;
+    text-align: left;
+}
+.logout-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 15px;
+    padding: 9px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background .15s;
+}
+.logout-btn:hover {
+    background: #5a4cff55;
+    text-decoration: underline;
+}
+
+.main-chat-wrapper {
     display: flex;
     flex-direction: column;
+    flex: 1 1 0;
+    min-height: 0;
     height: 100%;
     position: relative;
-    z-index: 1;
 }
 .chat-box {
     flex: 1;
@@ -59,12 +82,14 @@ header {
     display: flex;
     flex-direction: column;
     position: relative;
+    z-index: 1;
     border-radius: 0 0 22px 22px;
     box-shadow: 0 5px 30px #5a4cff22;
     scroll-behavior: smooth;
+    min-height: 0;
 }
 
-/* Instagram bubbles */
+/* Instagram chat bubbles */
 .message {
     display: flex;
     flex-direction: column;
@@ -73,11 +98,11 @@ header {
     max-width: 68%;
     position: relative;
     cursor: pointer;
-    animation: fadeBubble 0.6s cubic-bezier(.33,1,.58,1) both;
+    animation: fadeBubble .3s cubic-bezier(.33,1,.58,1) both;
 }
 @keyframes fadeBubble {
-    from {opacity: 0; transform: translateY(8px);}
-    to {opacity: 1; transform: translateY(0);}
+    from {opacity: 0;}
+    to {opacity:1;}
 }
 .received {
     align-self: flex-start;
@@ -97,11 +122,11 @@ header {
     box-shadow: 0 2px 12px #7a4cff21;
     position: relative;
     margin-bottom: 2px;
-    word-break: break-word;
     transition: box-shadow 0.18s;
+    word-break: break-word;
 }
 .sent .bubble {
-    background: linear-gradient(100deg, #5a4cff 60%, #ff0090 120%);
+    background: linear-gradient(100deg,#5a4cff 60%, #ff0090 120%);
     color: #fff;
     border-radius: 20px 20px 4px 20px;
     box-shadow: 0 3px 15px #ff009030;
@@ -121,7 +146,6 @@ header {
     margin-right: 3px;
 }
 
-/* Form input fixed bottom (Instagram style) */
 form {
     display: flex;
     padding: 14px;
@@ -162,7 +186,8 @@ button {
 button:hover {
     filter: brightness(1.14);
 }
-/* Popup for options */
+
+/* Popup menu for bubble actions */
 .msg-actions {
     display: none;
     position: absolute;
@@ -178,7 +203,7 @@ button:hover {
     animation: fadePopup .18s cubic-bezier(.52,1.1,.95,.93) both;
 }
 @keyframes fadePopup {
-    from { opacity: 0; transform: scale(.75);}
+    from { opacity: 0; transform: scale(.84);}
     to   { opacity: 1; transform: scale(1);}
 }
 .msg-actions.show {
@@ -200,9 +225,41 @@ button:hover {
     background: #5a4cff33;
 }
 
-@media (max-width: 480px) {
-    .bubble { font-size: 14px;}
-    .chat-box{padding:8px 2px;}
-    header { font-size: 18px; }
-    form { padding:7px; gap:5px;}
+.edit-popup {
+    position: fixed;
+    left: 0; right: 0; top: 0; bottom: 0;
+    display: flex;
+    align-items: center; justify-content: center;
+    z-index: 99;
+    background: rgba(32,36,52,0.58);
 }
+.edit-box {
+    background: #23253a;
+    padding: 30px 20px 22px 20px;
+    border-radius: 16px;
+    box-shadow: 0 5px 36px #5a4cff65;
+    width: 95vw; max-width: 320px;
+    display: flex; flex-direction: column; gap: 12px;
+}
+.edit-box input {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1.4px solid #5a4cff60;
+    background: #181c2c; color: #fff; font-size: 15px;
+}
+.edit-box .actions {
+    display: flex; justify-content: flex-end; gap: 8px;
+}
+.edit-box button {
+    padding: 8px 16px;
+    border-radius: 12px;
+    border: none;
+    color: #fff;
+    background: linear-gradient(100deg,#5a4cff,#ff0090);
+    font-weight: 500;
+    cursor: pointer;
+    transition: filter .15s;
+}
+.edit-box button:hover { filter: brightness(1.13);}
+@media (max-width: 480px) {
+    .bubble { font-size: 14px
