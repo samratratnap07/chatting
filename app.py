@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, session, url_for, jsonify
 import sqlite3
 from datetime import datetime
+import pytz   # ✅ Add for timezone fix
 
 app = Flask(__name__)
 app.secret_key = 'secretkey123'
@@ -70,17 +71,21 @@ def send():
     if 'username' not in session:
         return jsonify(success=False)
 
-    data = request.get_json()  # JSON से data ले रहे हैं
+    data = request.get_json()
     msg = data.get('message', '').strip()
     if msg == "":
         return jsonify(success=False)
 
     user = session['username']
-    time = datetime.now().strftime("%H:%M")
+
+    # ✅ GET CURRENT INDIAN TIME
+    IST = pytz.timezone('Asia/Kolkata')
+    time = datetime.now(IST).strftime("%H:%M")
 
     conn = sqlite3.connect("chat.db")
     c = conn.cursor()
-    c.execute("INSERT INTO messages (sender, message, timestamp) VALUES (?, ?, ?)", (user, msg, time))
+    c.execute("INSERT INTO messages (sender, message, timestamp) VALUES (?, ?, ?)",
+              (user, msg, time))
     conn.commit()
     conn.close()
 
