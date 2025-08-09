@@ -98,7 +98,7 @@ header {
     max-width: 68%;
     position: relative;
     cursor: pointer;
-    animation: fadeBubble .3s cubic-bezier(.33,1,.58,1) both;
+    /* ❌ animation line hata di blinking stop karne ke liye */
 }
 @keyframes fadeBubble {
     from {opacity: 0;}
@@ -262,4 +262,5 @@ button:hover {
 }
 .edit-box button:hover { filter: brightness(1.13);}
 @media (max-width: 480px) {
-    .bubble { font-size: 14px
+    .bubble { font-size: 14px }
+}
