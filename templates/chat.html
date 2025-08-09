@@ -7,16 +7,17 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-
     <div class="bg-blur-lights"></div>
     <header>Nick & Saisha Chat</header>
 
-    <div class="chat-box" id="chat-box"></div>
+    <div class="main-chat-layout">
+        <div class="chat-box" id="chat-box"></div>
 
-    <form id="chat-form">
-        <input type="text" id="message" placeholder="Type a message..." autocomplete="off" required>
-        <button type="submit">Send</button>
-    </form>
+        <form id="chat-form">
+            <input type="text" id="message" placeholder="Type a message..." autocomplete="off" required>
+            <button type="submit">Send</button>
+        </form>
+    </div>
 
     <script>
         const chatBox = document.getElementById("chat-box");
@@ -29,16 +30,25 @@
         }
 
         function createMsgActions(msgDiv) {
+            // Remove existing if any
+            msgDiv.querySelectorAll('.msg-actions').forEach(el => el.remove());
             const actionsPopup = document.createElement("div");
             actionsPopup.className = "msg-actions";
             actionsPopup.innerHTML = `
-                <button onclick="alert('Reply feature coming soon!')">Reply</button>
-                <button onclick="alert('Forward feature coming soon!')">Forward</button>
-                <button onclick="copyToClipboard('${msgDiv.querySelector('.bubble').innerText.replace(/'/g, "\\'")}')">Copy</button>
-                <button onclick="alert('Delete feature coming soon!')">Delete</button>
+                <button onclick="replyMsg('${msgDiv.querySelector('.bubble').innerText.replace(/'/g,"\\'")}')">Reply</button>
+                <button onclick="forwardMsg('${msgDiv.querySelector('.bubble').innerText.replace(/'/g,"\\'")}')">Forward</button>
+                <button onclick="copyToClipboard('${msgDiv.querySelector('.bubble').innerText.replace(/'/g,"\\'")}')">Copy</button>
+                <button onclick="deleteMsg(this)">Delete</button>
                 <button onclick="closeActions(this)">Close</button>
             `;
             msgDiv.appendChild(actionsPopup);
+            setTimeout(()=>actionsPopup.classList.add('show'),20);
+            // Close popup if click is anywhere outside
+            window.onclick = function(event) {
+                if (!msgDiv.contains(event.target)) {
+                    actionsPopup.classList.remove('show');
+                }
+            };
             return actionsPopup;
         }
 
@@ -50,6 +60,21 @@
             navigator.clipboard.writeText(text);
             alert('Message copied!');
         }
+        function replyMsg(msg) {
+            messageInput.value = "@" + msg + "\n";
+            messageInput.focus();
+            closeOptionsPopups();
+        }
+        function forwardMsg(msg) {
+            alert('Forward feature coming soon!');
+            closeOptionsPopups();
+        }
+        function deleteMsg(btn) {
+            btn.parentNode.parentNode.remove(); // Only removes from DOM. Real delete needs backend.
+        }
+        function closeOptionsPopups(){
+            document.querySelectorAll('.msg-actions.show').forEach(el=>el.classList.remove('show'));
+        }
 
         function loadMessages() {
             fetch("/messages")
@@ -60,29 +85,21 @@
                         let msgDiv = document.createElement("div");
                         msgDiv.classList.add("message");
                         msgDiv.classList.add(msg.sender === username ? "sent" : "received");
-
-                        // Instagram style bubble
                         msgDiv.innerHTML = `
                             <div class="username">${msg.sender}</div>
                             <div class="bubble">${msg.message}</div>
                             <div class="timestamp">${msg.timestamp}</div>
                         `;
 
-                        msgDiv.oncontextmenu = (e) => { e.preventDefault(); }
-                        msgDiv.onmousedown = (e) => {
-                            if (e.button === 0 || e.button === 2) {
-                                msgDiv.longPressTimer = setTimeout(() => {
-                                    document.querySelectorAll(".msg-actions.show").forEach(el => el.classList.remove("show"));
-                                    let actions = msgDiv.querySelector(".msg-actions");
-                                    if (!actions) actions = createMsgActions(msgDiv);
-                                    actions.classList.add('show');
-                                }, 370);
-                            }
+                        // Enable single-click to open options instead of long-press
+                        msgDiv.onclick = (e) => {
+                            // Only trigger on non-popup button click
+                            if(!e.target.classList.contains('bubble')) return;
+                            closeOptionsPopups();
+                            let actions = msgDiv.querySelector(".msg-actions");
+                            if (!actions) actions = createMsgActions(msgDiv);
+                            actions.classList.add('show');
                         };
-                        msgDiv.onmouseup = msgDiv.onmouseleave = () => {
-                            if(msgDiv.longPressTimer) clearTimeout(msgDiv.longPressTimer);
-                        };
-
                         chatBox.appendChild(msgDiv);
                     });
                     scrollToBottom();
@@ -107,6 +124,7 @@
             });
         });
 
+        // Refresh messages every 2 seconds
         setInterval(loadMessages, 2000);
         loadMessages();
     </script>
