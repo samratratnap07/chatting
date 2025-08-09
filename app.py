@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session, url_for, jsonify
 import sqlite3
 from datetime import datetime
 
@@ -26,7 +26,7 @@ def init_db():
 
 init_db()
 
-# ROUTES
+# LOGIN PAGE
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -39,31 +39,54 @@ def login():
             return render_template('login.html', error="Invalid credentials")
     return render_template('login.html')
 
+# CHAT PAGE
 @app.route('/chat')
 def chat():
     if 'username' not in session:
         return redirect('/')
+    return render_template('chat.html', username=session['username'])
+
+# API - get all messages for AJAX
+@app.route('/messages')
+def get_messages():
     conn = sqlite3.connect("chat.db")
     c = conn.cursor()
-    c.execute("SELECT * FROM messages")
-    msgs = c.fetchall()
+    c.execute("SELECT sender, message, timestamp FROM messages ORDER BY id ASC")
+    rows = c.fetchall()
     conn.close()
-    return render_template('chat.html', messages=msgs, user=session['username'])
 
+    messages = []
+    for sender, message, timestamp in rows:
+        messages.append({
+            "sender": sender,
+            "message": message,
+            "timestamp": timestamp
+        })
+    return jsonify(messages=messages)
+
+# SEND MESSAGE
 @app.route('/send', methods=['POST'])
 def send():
     if 'username' not in session:
-        return redirect('/')
-    msg = request.form['message']
+        return jsonify(success=False)
+
+    data = request.get_json()  # JSON से data ले रहे हैं
+    msg = data.get('message', '').strip()
+    if msg == "":
+        return jsonify(success=False)
+
     user = session['username']
     time = datetime.now().strftime("%H:%M")
+
     conn = sqlite3.connect("chat.db")
     c = conn.cursor()
     c.execute("INSERT INTO messages (sender, message, timestamp) VALUES (?, ?, ?)", (user, msg, time))
     conn.commit()
     conn.close()
-    return redirect('/chat')
 
+    return jsonify(success=True)
+
+# LOGOUT
 @app.route('/logout')
 def logout():
     session.pop('username', None)
