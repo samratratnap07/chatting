@@ -91,8 +91,8 @@ def send():
 
     return jsonify(success=True)
 
-# LOGOUT
-@app.route('/logout')
+# LOGOUT (Step 3 fix ✅)
+@app.route('/logout', methods=['POST', 'GET'])
 def logout():
     session.pop('username', None)
     return redirect('/')
