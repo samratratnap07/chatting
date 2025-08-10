@@ -5,6 +5,92 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nick & Saisha Chat</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+      /* --- 3D CUBE DESIGN --- */
+      .cube-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 220px;
+        margin-top: 14px;
+        margin-bottom: 10px;
+      }
+      .cube {
+        width: 150px;
+        height: 150px;
+        position: relative;
+        transform-style: preserve-3d;
+        transform: rotateY(25deg) rotateX(13deg);
+        transition: transform 0.8s;
+        perspective: 900px;
+      }
+      .cube .face {
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        opacity: 0.97;
+        border-radius: 11px;
+        border: 2.2px solid #252243;
+        box-shadow: 0 9px 29px #18133774;
+        background: linear-gradient(135deg, #321e53, #171924 80%);
+      }
+      .cube .front  { transform: translateZ(75px);}
+      .cube .back   { transform: rotateY(180deg) translateZ(75px);}
+      .cube .right  { transform: rotateY(90deg) translateZ(75px);}
+      .cube .left   { transform: rotateY(-90deg) translateZ(75px);}
+      .cube .top    { transform: rotateX(90deg) translateZ(75px);}
+      .cube .bottom {
+        transform: rotateX(-90deg) translateZ(75px);
+        display: flex; align-items: center; justify-content: center;
+        overflow: hidden;
+      }
+
+      /* Surprise animation! */
+      .cube.surprise .bottom {
+        animation: raise-bottom 0.75s forwards cubic-bezier(.5,1.7,.42,.88);
+        z-index: 5;
+      }
+      @keyframes raise-bottom {
+        0%   { transform: rotateX(-90deg) translateZ(75px);}
+        90%  { transform: rotateX(7deg) translateZ(75px);}
+        100% { transform: rotateX(0deg) translateZ(75px);}
+      }
+
+      #birthdayMessage {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 28px 4px 12px 4px;
+        width: 100%; height: 100%;
+        background: linear-gradient(100deg,#04c0ff22,#ff19be28 120%);
+        border-radius: 8px;
+      }
+      .cube.surprise #birthdayMessage {
+        display: flex;
+      }
+      #birthdayMessage p {
+        font-size: 1.13rem;
+        font-weight: bold;
+        color: #ffdbfa;
+        margin-bottom: 9px;
+        text-shadow: 1px 2px 7px #1f1844, 0 0 2px #fff8;
+        letter-spacing: .5px;
+      }
+      #surpriseBtn {
+        background: linear-gradient(88deg,#fe3dea,#00f0ff);
+        color: #fff; font-weight: bold;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 8px;
+        font-size: 1rem;
+        box-shadow: 0 2px 13px #38a1e533;
+        cursor: pointer;
+        outline: none;
+        transition: filter .13s;
+      }
+      #surpriseBtn:hover { filter: brightness(1.13);}
+    </style>
 </head>
 <body>
     <div class="bg-blur-lights"></div>
@@ -14,6 +100,25 @@
             <button type="submit" class="logout-btn">Logout</button>
         </form>
     </header>
+
+    <!-- 3D CUBE AREA START (add your link below!) -->
+    <div class="cube-container">
+      <div class="cube" id="birthdayCube">
+        <div class="face front"></div>
+        <div class="face back"></div>
+        <div class="face left"></div>
+        <div class="face right"></div>
+        <div class="face top"></div>
+        <div class="face bottom">
+          <div id="birthdayMessage">
+            <p>Happy Birthday to You Bro</p>
+            <button id="surpriseBtn" onclick="window.open('https://your-link-here.com')">Click Here</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 3D CUBE AREA END -->
+
     <div class="main-chat-wrapper">
         <div class="chat-box" id="chat-box"></div>
         <form id="chat-form">
@@ -23,6 +128,17 @@
     </div>
     <div id="edit-popup" style="display:none"></div>
     <script>
+        // --- 3D SURPRISE LOGIC ---
+        function triggerBirthdaySurprise() {
+            const cube = document.getElementById('birthdayCube');
+            cube.classList.add('surprise');
+        }
+        function resetBirthdaySurprise() {
+            const cube = document.getElementById('birthdayCube');
+            cube.classList.remove('surprise');
+        }
+
+        // <<== CHAT LOGIC SAME AS BEFORE START ==>>
         const chatBox = document.getElementById("chat-box");
         const form = document.getElementById("chat-form");
         const messageInput = document.getElementById("message");
@@ -33,7 +149,6 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // UI: Create action/popup menu
         function createMsgActions(msgDiv, msgId, msgText) {
             msgDiv.querySelectorAll(".msg-actions").forEach(el=>el.remove());
             const actionsPopup = document.createElement("div");
@@ -48,12 +163,10 @@
             return actionsPopup;
         }
 
-        // Message menu will NOT autoclose by itself; only close when user clicks elsewhere:
         document.body.addEventListener('click', function(e){
             document.querySelectorAll(".msg-actions.show").forEach(el => {
                 if(!el.parentNode.contains(e.target)) el.classList.remove("show");
             });
-            // Edit popup autoclose if click background
             const editPopup = document.getElementById('edit-popup');
             if(editPopup.style.display=='flex' && e.target===editPopup) editPopup.style.display='none';
         });
@@ -80,7 +193,6 @@
         }
         function submitEdit(msgId){
             const newText = document.getElementById('edit-msg-input').value;
-            // Dummy Ajax request; replace with backend logic
             fetch("/edit", {
                 method:"POST",
                 headers: {"Content-Type":"application/json"},
@@ -96,7 +208,6 @@
             alert('Message copied!');
         }
         function deleteMsg(msgId, btn){
-            // Dummy function! Backend required.
             fetch("/delete",{
                 method:"POST",
                 headers: {"Content-Type":"application/json"},
@@ -107,7 +218,18 @@
               });
         }
 
-        // Render messages (sample ids used for demo)
+        // LOOK FOR SURPRISE PHRASE:
+        function checkForSurprise(messages) {
+            for (let i = messages.length - 1; i >= Math.max(0, messages.length - 10); --i) {
+                const msg = messages[i].message || '';
+                if (msg.toLowerCase().includes("surprise pesh kiya jaye")) {
+                    triggerBirthdaySurprise();
+                    return;
+                }
+            }
+            resetBirthdaySurprise();
+        }
+
         function loadMessages() {
             fetch("/messages")
                 .then(res => res.json())
@@ -122,15 +244,15 @@
                             <div class="bubble">${msg.message}</div>
                             <div class="timestamp">${msg.timestamp}</div>
                         `;
-                        const msgId = msg.id !== undefined ? msg.id : idx; // using idx if no id field
+                        const msgId = msg.id !== undefined ? msg.id : idx;
                         msgDiv.onclick = function(e){
-                            // Open popup menu on single click
                             createMsgActions(msgDiv, msgId, msg.message);
                             e.stopPropagation();
                         };
                         chatBox.appendChild(msgDiv);
                     });
                     scrollToBottom();
+                    checkForSurprise(data.messages);
                 });
         }
         form.addEventListener("submit", e => {
