@@ -6,90 +6,78 @@
     <title>Nick & Saisha Chat</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <style>
-      /* --- 3D CUBE DESIGN --- */
-      .cube-container {
+      /* ============== PHONE STYLE SQUARE BOX CSS ============== */
+      .phone-square-container {
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 220px;
-        margin-top: 14px;
-        margin-bottom: 10px;
+        height: 140px;
+        margin-top: 18px;
+        margin-bottom: 8px;
       }
-      .cube {
-        width: 150px;
-        height: 150px;
+
+      .phone-square {
         position: relative;
-        transform-style: preserve-3d;
-        transform: rotateY(25deg) rotateX(13deg);
-        transition: transform 0.8s;
+        width: 205px;
+        height: 68px;
         perspective: 900px;
       }
-      .cube .face {
+      .phone-square .base {
+        width: 205px;
+        height: 68px;
+        background: linear-gradient(90deg, #211e2c 70%, #3c3453 100%);
+        border-radius: 13px;
+        border: 2px solid #444;
+        box-shadow: 0 6px 22px #18133744;
         position: absolute;
-        width: 150px;
-        height: 150px;
-        opacity: 0.97;
-        border-radius: 11px;
-        border: 2.2px solid #252243;
-        box-shadow: 0 9px 29px #18133774;
-        background: linear-gradient(135deg, #321e53, #171924 80%);
+        left: 0; top: 0;
+        z-index: 1;
       }
-      .cube .front  { transform: translateZ(75px);}
-      .cube .back   { transform: rotateY(180deg) translateZ(75px);}
-      .cube .right  { transform: rotateY(90deg) translateZ(75px);}
-      .cube .left   { transform: rotateY(-90deg) translateZ(75px);}
-      .cube .top    { transform: rotateX(90deg) translateZ(75px);}
-      .cube .bottom {
-        transform: rotateX(-90deg) translateZ(75px);
-        display: flex; align-items: center; justify-content: center;
-        overflow: hidden;
+      .phone-square .lid {
+        width: 205px;
+        height: 68px;
+        background: linear-gradient(90deg, #3e3567 5%, #211e2c 80%);
+        border-radius: 13px 13px 13px 13px;
+        border: 2px solid #444;
+        box-shadow: 0 2px 13px #3331;
+        position: absolute;
+        left: 0; top: 0;
+        z-index: 2;
+        transform-origin: bottom center;
+        transition: transform 0.6s cubic-bezier(.7,1.8,.57,.91);
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
-
-      /* Surprise animation! */
-      .cube.surprise .bottom {
-        animation: raise-bottom 0.75s forwards cubic-bezier(.5,1.7,.42,.88);
-        z-index: 5;
-      }
-      @keyframes raise-bottom {
-        0%   { transform: rotateX(-90deg) translateZ(75px);}
-        90%  { transform: rotateX(7deg) translateZ(75px);}
-        100% { transform: rotateX(0deg) translateZ(75px);}
-      }
-
-      #birthdayMessage {
+      .phone-square .birthday-message {
         display: none;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 28px 4px 12px 4px;
+        padding: 10px 0;
         width: 100%; height: 100%;
-        background: linear-gradient(100deg,#04c0ff22,#ff19be28 120%);
-        border-radius: 8px;
       }
-      .cube.surprise #birthdayMessage {
-        display: flex;
-      }
-      #birthdayMessage p {
-        font-size: 1.13rem;
+      .phone-square .birthday-message p {
+        font-size: 1rem;
         font-weight: bold;
         color: #ffdbfa;
-        margin-bottom: 9px;
+        margin-bottom: 7px;
         text-shadow: 1px 2px 7px #1f1844, 0 0 2px #fff8;
-        letter-spacing: .5px;
       }
       #surpriseBtn {
         background: linear-gradient(88deg,#fe3dea,#00f0ff);
         color: #fff; font-weight: bold;
         border: none;
-        padding: 8px 15px;
-        border-radius: 8px;
-        font-size: 1rem;
-        box-shadow: 0 2px 13px #38a1e533;
+        padding: 8px 12px;
+        border-radius: 9px;
+        box-shadow: 0 2px 11px #38a1e522;
         cursor: pointer;
-        outline: none;
-        transition: filter .13s;
+        transition: filter .15s;
       }
-      #surpriseBtn:hover { filter: brightness(1.13);}
+      #surpriseBtn:hover { filter: brightness(1.12);}
+      /* ======= Flip Animation & Message show ======= */
+      .phone-square.flipped .lid { transform: rotateX(180deg); }
+      .phone-square.flipped .birthday-message { display: flex; }
     </style>
 </head>
 <body>
@@ -101,23 +89,20 @@
         </form>
     </header>
 
-    <!-- 3D CUBE AREA START (add your link below!) -->
-    <div class="cube-container">
-      <div class="cube" id="birthdayCube">
-        <div class="face front"></div>
-        <div class="face back"></div>
-        <div class="face left"></div>
-        <div class="face right"></div>
-        <div class="face top"></div>
-        <div class="face bottom">
-          <div id="birthdayMessage">
+    <!-- PHONE STYLE SQUARE BOX START -->
+    <div class="phone-square-container">
+      <div class="phone-square" id="birthdaySquare">
+        <div class="lid" id="squareLid">
+          <div class="birthday-message" id="birthdayMessage">
             <p>Happy Birthday to You Bro</p>
+            <!-- अपनी link नीचे डालें -->
             <button id="surpriseBtn" onclick="window.open('https://your-link-here.com')">Click Here</button>
           </div>
         </div>
+        <div class="base"></div>
       </div>
     </div>
-    <!-- 3D CUBE AREA END -->
+    <!-- PHONE STYLE SQUARE BOX END -->
 
     <div class="main-chat-wrapper">
         <div class="chat-box" id="chat-box"></div>
@@ -128,17 +113,15 @@
     </div>
     <div id="edit-popup" style="display:none"></div>
     <script>
-        // --- 3D SURPRISE LOGIC ---
+        // =============== PHONE-STYLE FLIP LOGIC ==============
         function triggerBirthdaySurprise() {
-            const cube = document.getElementById('birthdayCube');
-            cube.classList.add('surprise');
+            document.getElementById('birthdaySquare').classList.add('flipped');
         }
         function resetBirthdaySurprise() {
-            const cube = document.getElementById('birthdayCube');
-            cube.classList.remove('surprise');
+            document.getElementById('birthdaySquare').classList.remove('flipped');
         }
 
-        // <<== CHAT LOGIC SAME AS BEFORE START ==>>
+        // <<== CHAT LOGIC SAME AS ORIGINAL (unchanged) ==>>
         const chatBox = document.getElementById("chat-box");
         const form = document.getElementById("chat-form");
         const messageInput = document.getElementById("message");
@@ -218,7 +201,7 @@
               });
         }
 
-        // LOOK FOR SURPRISE PHRASE:
+        // ------------- Surprise Message Checker -------------
         function checkForSurprise(messages) {
             for (let i = messages.length - 1; i >= Math.max(0, messages.length - 10); --i) {
                 const msg = messages[i].message || '';
