@@ -16,36 +16,30 @@
     </form>
   </header>
 
-  <!-- Flip Card Wrapper -->
-  <div id="flip-card" class="flip-card">
-    <div class="flip-card-inner">
+  <div class="main-chat-wrapper">
+    <div class="chat-box" id="chat-box">
+      <!-- Chat messages appear here -->
       
-      <!-- Front side: normal chat UI with animated glowing square -->
-      <div class="flip-card-front">
-        <div class="main-chat-wrapper">
-          <div class="chat-box" id="chat-box">
-            <!-- Animated glowing square -->
+      <!-- Single centered flip card square -->
+      <div id="flip-card" class="flip-card-square">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
             <div class="animated-square"></div>
-            <!-- 🎯 Animated Marked Card -->
-            <div class="animated-card"></div>
           </div>
-          <form id="chat-form">
-            <input type="text" id="message" placeholder="Type a message..." autocomplete="off" required />
-            <button type="submit">Send</button>
-          </form>
+          <div class="flip-card-back">
+            <h2 class="typing-text" aria-label="This is the end"></h2>
+            <button id="click-me-btn" class="click-me-btn">Click Me</button>
+          </div>
         </div>
       </div>
-      
-      <!-- Back side: rotateY(180deg) with animated typing text and button -->
-      <div class="flip-card-back">
-        <h2 class="typing-text" aria-label="This is the end"></h2>
-        <button id="click-me-btn" class="click-me-btn">Click Me</button>
-      </div>
-
     </div>
+
+    <form id="chat-form">
+      <input type="text" id="message" placeholder="Type a message..." autocomplete="off" required />
+      <button type="submit">Send</button>
+    </form>
   </div>
 
-  <!-- Edit Popup -->
   <div id="edit-popup" style="display:none"></div>
 
   <script>
@@ -132,8 +126,6 @@
         .then(res => res.json())
         .then(data => {
           chatBox.innerHTML = "";
-          // Re-add animated elements so they don't get removed on reload
-          chatBox.innerHTML = `<div class="animated-square"></div><div class="animated-card"></div>`;
           data.messages.forEach((msg, idx) => {
             let msgDiv = document.createElement("div");
             msgDiv.classList.add("message");
@@ -154,7 +146,7 @@
         });
     }
 
-    // Typing effect for the back side text
+    // Typing effect on back side text
     function typeWriter(text, element, speed=100) {
       let i = 0;
       element.textContent = "";
@@ -201,7 +193,7 @@
 
     document.addEventListener("click", e => {
       if (e.target.id === "click-me-btn") {
-        window.location.href = "https://www.youtube.com/";
+        window.location.href = "https://www.youtube.com/"; // Apna desired link yahan daalein
       }
     });
 
