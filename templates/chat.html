@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nick & Saisha Chat</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
-    <!-- Google Fonts for stylish text -->
-    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Stylish font for back face text -->
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="bg-blur-lights"></div>
-
     <header>
         <span class="header-title">Nick & Saisha Chat</span>
         <form method="POST" action="/logout" style="margin:0;display:inline;">
@@ -19,28 +18,185 @@
     </header>
 
     <div class="main-chat-wrapper">
-        <!-- The flip container centered in chat -->
-        <div id="flip-square" style="display:none;">
-            <div class="cube">
-                <div class="face front">
-                    <!-- Blank face A -->
-                </div>
-                <div class="face back">
+
+        <!-- 🎯 Flip Square Card (center) -->
+        <div id="flip-card" style="display:none;">
+            <div class="flip-inner">
+                <!-- Blank Face A -->
+                <div class="flip-face flip-front"></div>
+
+                <!-- Face B with text & button -->
+                <div class="flip-face flip-back">
                     <div id="square-text">This is the end</div>
                     <button id="square-btn">Click me</button>
                 </div>
             </div>
         </div>
+        <!-- End Flip Card -->
 
         <div class="chat-box" id="chat-box"></div>
         <form id="chat-form">
-            <input type="text" id="message" placeholder="Type a message..." autocomplete="off" required />
+            <input type="text" id="message" placeholder="Type a message..." autocomplete="off" required>
             <button type="submit">Send</button>
         </form>
     </div>
 
     <div id="edit-popup" style="display:none"></div>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        const chatBox = document.getElementById("chat-box");
+        const form = document.getElementById("chat-form");
+        const messageInput = document.getElementById("message");
+        const username = "{{ username }}";
+
+        // Flip card elements
+        const flipCard = document.getElementById("flip-card");
+        const flipInner = flipCard.querySelector(".flip-inner");
+
+        let flipVisible = false;
+        let flipped = false;
+
+        function scrollToBottom() {
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function createMsgActions(msgDiv, msgId, msgText) {
+            msgDiv.querySelectorAll(".msg-actions").forEach(el=>el.remove());
+            const actionsPopup = document.createElement("div");
+            actionsPopup.className = "msg-actions";
+            actionsPopup.innerHTML = `
+                <button onclick="editMsgUI(${msgId}, this)">Edit</button>
+                <button onclick="copyToClipboard('${msgText.replace(/'/g,"\\'")}')">Copy</button>
+                <button onclick="deleteMsg(${msgId}, this)">Delete</button>
+            `;
+            msgDiv.appendChild(actionsPopup);
+            setTimeout(() => actionsPopup.classList.add('show'), 15);
+            return actionsPopup;
+        }
+
+        document.body.addEventListener('click', function(e){
+            document.querySelectorAll(".msg-actions.show").forEach(el => {
+                if(!el.parentNode.contains(e.target)) el.classList.remove("show");
+            });
+            const editPopup = document.getElementById('edit-popup');
+            if(editPopup.style.display=='flex' && e.target===editPopup) editPopup.style.display='none';
+        });
+
+        function editMsgUI(msgId, btn) {
+            document.querySelectorAll(".msg-actions.show").forEach(el=>el.classList.remove("show"));
+            let msgBubble = btn.closest('.message').querySelector('.bubble');
+            let oldText = msgBubble.innerText;
+            const editPopup = document.getElementById('edit-popup');
+            editPopup.style.display='flex';
+            editPopup.innerHTML = `
+                <div class="edit-popup">
+                    <div class="edit-box">
+                      <b>Edit Message</b>
+                      <input type="text" id="edit-msg-input" value="${oldText.replace(/"/g,'&quot;')}">
+                      <div class="actions">
+                        <button onclick="submitEdit(${msgId})">Save</button>
+                        <button onclick="document.getElementById('edit-popup').style.display='none'">Cancel</button>
+                      </div>
+                    </div>
+                </div>
+            `;
+            setTimeout(() => document.getElementById('edit-msg-input').focus(),60);
+        }
+
+        function submitEdit(msgId){
+            const newText = document.getElementById('edit-msg-input').value;
+            fetch("/edit", {
+                method:"POST",
+                headers: {"Content-Type":"application/json"},
+                body: JSON.stringify({msg_id:msgId, new_text:newText})
+            }).then(r=>r.json())
+             .then(res=>{
+                document.getElementById('edit-popup').style.display='none';
+                loadMessages();
+             });
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text);
+            alert('Message copied!');
+        }
+
+        function deleteMsg(msgId, btn){
+            fetch("/delete",{
+                method:"POST",
+                headers: {"Content-Type":"application/json"},
+                body: JSON.stringify({msg_id:msgId})
+            }).then(r=>r.json())
+              .then(res=>{
+                loadMessages();
+              });
+        }
+
+        function loadMessages() {
+            fetch("/messages")
+                .then(res => res.json())
+                .then(data => {
+                    chatBox.innerHTML = "";
+                    data.messages.forEach((msg, idx) => {
+                        let msgDiv = document.createElement("div");
+                        msgDiv.classList.add("message");
+                        msgDiv.classList.add(msg.sender === username ? "sent" : "received");
+                        msgDiv.innerHTML = `
+                            <div class="username">${msg.sender}</div>
+                            <div class="bubble">${msg.message}</div>
+                            <div class="timestamp">${msg.timestamp}</div>
+                        `;
+                        const msgId = msg.id !== undefined ? msg.id : idx;
+                        msgDiv.onclick = function(e){
+                            createMsgActions(msgDiv, msgId, msg.message);
+                            e.stopPropagation();
+                        };
+                        chatBox.appendChild(msgDiv);
+
+                        // Flip on "Happy Birthday"
+                        if(msg.message.toLowerCase().includes("happy birthday")) {
+                            if(!flipVisible) {
+                                flipCard.style.display = "block";
+                                flipVisible = true;
+                            } else {
+                                flipped = !flipped;
+                                if(flipped) {
+                                    flipInner.classList.add("flipped");
+                                } else {
+                                    flipInner.classList.remove("flipped");
+                                }
+                            }
+                        }
+                    });
+                    scrollToBottom();
+                });
+        }
+
+        form.addEventListener("submit", e => {
+            e.preventDefault();
+            const text = messageInput.value.trim();
+            if (!text) return;
+            fetch("/send", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({message: text})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    messageInput.value = "";
+                    loadMessages();
+                }
+            });
+        });
+
+        // Button click in back face
+        document.getElementById("square-btn").addEventListener("click", function(){
+            window.location.href = "https://example.com"; // Change your link
+        });
+
+        setInterval(loadMessages, 2000);
+        loadMessages();
+    </script>
 </body>
 </html>
