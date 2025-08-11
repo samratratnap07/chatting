@@ -323,3 +323,65 @@ button:hover {
     from { transform: translateY(0px); }
     to { transform: translateY(-8px); }
 }
+#big-square {
+    position: absolute;
+    top: 10px;       /* Chat ke starting (upper) part me */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 280px;
+    height: 280px;
+    background: linear-gradient(135deg, #5a4cff, #ff0090);
+    border-radius: 20px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    display: none;
+    flex-direction: column;
+    justify-content: flex-end; /* Text and button bottom aligned */
+    align-items: center;
+    z-index: 5;
+    perspective: 1000px; /* needed for 3D flip */
+    cursor: default;
+}
+
+/* Inner container to handle flip */
+#big-square.inner-flip {
+    animation: flipAnimation 1s forwards;
+}
+
+#square-text {
+    font-family: 'Pacifico', 'Quicksand', cursive;
+    font-size: 26px;
+    color: white;
+    text-align: center;
+    margin-bottom: 18px;
+}
+
+/* Button styles remain same */
+#square-btn {
+    padding: 10px 20px;
+    background: white;
+    color: #5a4cff;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transition: transform 0.2s, background 0.3s;
+}
+#square-btn:hover {
+    transform: scale(1.1);
+    background: #f0f0f0;
+}
+
+/* Flip animation keyframes */
+@keyframes flipAnimation {
+    0% {
+        transform: rotateX(0deg);
+    }
+    50% {
+        transform: rotateX(90deg);
+    }
+    100% {
+        transform: rotateX(0deg);
+    }
+}
