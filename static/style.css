@@ -1,80 +1,72 @@
-/* Flip square container centered */
-#flip-square {
+/* ========================= */
+/* 🎯 Flip Card Styling      */
+/* ========================= */
+#flip-card {
     position: absolute;
-    top: 50%;
+    top: 50%;  /* Center vertically */
     left: 50%;
-    transform-style: preserve-3d;
-    transform-origin: center center;
     transform: translate(-50%, -50%);
-    width: 280px;
-    height: 280px;
+    width: 250px;
+    height: 250px;
     perspective: 1000px;
-    user-select: none;
-    z-index: 10;
+    z-index: 5;
+    display: none; /* hidden by default, shown via JS trigger */
 }
-.cube {
+
+.flip-inner {
     width: 100%;
     height: 100%;
-    position: relative;
     transform-style: preserve-3d;
-    transition: transform 1s cubic-bezier(0.645, 0.045, 0.355, 1);
-    cursor: pointer;
+    transition: transform 1s;
 }
-.face {
+
+.flip-inner.flipped {
+    transform: rotateY(180deg); /* flip effect */
+}
+
+.flip-face {
     position: absolute;
     width: 100%;
     height: 100%;
-    border-radius: 20px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    border-radius: 15px;
     backface-visibility: hidden;
 }
 
-/* Front face: blank */
-.face.front {
+/* Front face: blank design */
+.flip-front {
     background: linear-gradient(135deg, #5a4cff, #ff0090);
 }
 
-/* Back face: with text and button */
-.face.back {
+/* Back face: text + button */
+.flip-back {
     background: linear-gradient(135deg, #ff0090, #5a4cff);
-    color: white;
-    transform: rotateX(180deg);
+    transform: rotateY(180deg);
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
+    justify-content: center;
     align-items: center;
-    padding-bottom: 25px;
-    box-sizing: border-box;
-}
-/* Text style */
-#square-text {
-    font-family: 'Pacifico', 'Quicksand', cursive;
-    font-size: 28px;
-    font-weight: 600;
-    margin-bottom: 15px;
-    user-select: none;
 }
 
-/* Button style */
+#square-text {
+    font-family: 'Pacifico', cursive;
+    font-size: 24px;
+    color: #fff;
+    margin-bottom: 15px;
+}
+
 #square-btn {
-    padding: 10px 24px;
-    background: white;
-    color: #5a4cff;
-    font-weight: 700;
-    font-size: 16px;
-    border-radius: 30px;
+    padding: 10px 20px;
+    background: #fff;
     border: none;
+    border-radius: 20px;
+    font-weight: bold;
+    color: #5a4cff;
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    transition: transform 0.2s ease, background 0.3s ease;
+    transition: transform 0.2s, background 0.3s;
 }
 
 #square-btn:hover {
     background: #f0f0f0;
     transform: scale(1.1);
-}
-
-/* Flipped state class */
-.cube.flipped {
-    transform: rotateX(180deg);
 }
