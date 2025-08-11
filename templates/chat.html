@@ -6,78 +6,95 @@
     <title>Nick & Saisha Chat</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <style>
-      /* ============== PHONE STYLE SQUARE BOX CSS ============== */
+      /* ==== Chat background color (change to taste) ==== */
+      .main-chat-wrapper {
+        background: linear-gradient(135deg, #2d3e60 70%, #426899 100%);
+        border-radius: 14px;
+        padding-bottom: 16px;
+        min-height: 350px;
+      }
+
+      /* ==== Card (phone-style square) updated colors & sizes ==== */
       .phone-square-container {
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 140px;
         margin-top: 18px;
-        margin-bottom: 8px;
+        margin-bottom: 12px;
+        height: 210px; /* or as fits your layout */
       }
-
       .phone-square {
         position: relative;
-        width: 205px;
-        height: 68px;
-        perspective: 900px;
+        width: 144px;    /* left/right side: ~3in */
+        height: 192px;   /* up/down side: ~4in */
+        perspective: 1200px;
+        margin: 0 auto;
       }
       .phone-square .base {
-        width: 205px;
-        height: 68px;
-        background: linear-gradient(90deg, #211e2c 70%, #3c3453 100%);
-        border-radius: 13px;
-        border: 2px solid #444;
-        box-shadow: 0 6px 22px #18133744;
+        width: 144px;
+        height: 192px;
+        background: linear-gradient(100deg,#45A4FF 60%, #DF38A1 100%);
+        border-radius: 16px;
+        border: 2px solid #555;
+        box-shadow: 0 9px 29px #18133778;
         position: absolute;
         left: 0; top: 0;
         z-index: 1;
       }
       .phone-square .lid {
-        width: 205px;
-        height: 68px;
-        background: linear-gradient(90deg, #3e3567 5%, #211e2c 80%);
-        border-radius: 13px 13px 13px 13px;
-        border: 2px solid #444;
-        box-shadow: 0 2px 13px #3331;
+        width: 144px;
+        height: 192px;
+        background: linear-gradient(100deg,#4A4AE6 5%, #DF38A1 80%);
+        border-radius: 16px;
+        border: 2px solid #555;
+        box-shadow: 0 2px 17px #3334;
         position: absolute;
         left: 0; top: 0;
         z-index: 2;
-        transform-origin: bottom center;
-        transition: transform 0.6s cubic-bezier(.7,1.8,.57,.91);
+        transform-origin: right center;
+        transition: transform 0.7s cubic-bezier(.7,1.8,.57,.91);
         display: flex;
         align-items: center;
         justify-content: center;
+        backface-visibility: hidden;
       }
       .phone-square .birthday-message {
         display: none;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 10px 0;
+        padding: 24px 0;
         width: 100%; height: 100%;
       }
+      .phone-square.flipped .lid {
+        transform: rotateY(180deg);
+      }
+      .phone-square.flipped .birthday-message {
+        display: flex;
+      }
       .phone-square .birthday-message p {
-        font-size: 1rem;
+        font-size: 1.18rem;
         font-weight: bold;
-        color: #ffdbfa;
-        margin-bottom: 7px;
-        text-shadow: 1px 2px 7px #1f1844, 0 0 2px #fff8;
+        color: #fff;
+        margin-bottom: 14px;
+        text-shadow: 1px 2px 7px #222, 0 0 2px #fff8;
+        letter-spacing: 1px;
       }
       #surpriseBtn {
         background: linear-gradient(88deg,#fe3dea,#00f0ff);
         color: #fff; font-weight: bold;
         border: none;
-        padding: 8px 12px;
-        border-radius: 9px;
-        box-shadow: 0 2px 11px #38a1e522;
+        padding: 11px 21px;
+        border-radius: 10px;
+        font-size: 1.05rem;
+        box-shadow: 0 2px 14px #349eed44;
         cursor: pointer;
-        transition: filter .15s;
+        margin-top: 8px;
+        transition: filter .17s;
       }
-      #surpriseBtn:hover { filter: brightness(1.12);}
-      /* ======= Flip Animation & Message show ======= */
-      .phone-square.flipped .lid { transform: rotateX(180deg); }
-      .phone-square.flipped .birthday-message { display: flex; }
+      #surpriseBtn:hover {
+        filter: brightness(1.14);
+      }
     </style>
 </head>
 <body>
@@ -88,22 +105,20 @@
             <button type="submit" class="logout-btn">Logout</button>
         </form>
     </header>
-
-    <!-- PHONE STYLE SQUARE BOX START -->
+    <!-- PHONE STYLE CARD (centered, updated colors, left-right flip) -->
     <div class="phone-square-container">
       <div class="phone-square" id="birthdaySquare">
         <div class="lid" id="squareLid">
           <div class="birthday-message" id="birthdayMessage">
             <p>Happy Birthday to You Bro</p>
-            <!-- अपनी link नीचे डालें -->
+            <!-- Replace link below! -->
             <button id="surpriseBtn" onclick="window.open('https://your-link-here.com')">Click Here</button>
           </div>
         </div>
         <div class="base"></div>
       </div>
     </div>
-    <!-- PHONE STYLE SQUARE BOX END -->
-
+    <!-- END phone card -->
     <div class="main-chat-wrapper">
         <div class="chat-box" id="chat-box"></div>
         <form id="chat-form">
@@ -113,7 +128,7 @@
     </div>
     <div id="edit-popup" style="display:none"></div>
     <script>
-        // =============== PHONE-STYLE FLIP LOGIC ==============
+        // ==== Birthday Card Flip logic (left-right turn, text always correct way up) ====
         function triggerBirthdaySurprise() {
             document.getElementById('birthdaySquare').classList.add('flipped');
         }
@@ -121,7 +136,7 @@
             document.getElementById('birthdaySquare').classList.remove('flipped');
         }
 
-        // <<== CHAT LOGIC SAME AS ORIGINAL (unchanged) ==>>
+        // <<== CHAT LOGIC (as before, unchanged except for surprise checker) ==>>
         const chatBox = document.getElementById("chat-box");
         const form = document.getElementById("chat-form");
         const messageInput = document.getElementById("message");
@@ -201,7 +216,7 @@
               });
         }
 
-        // ------------- Surprise Message Checker -------------
+        // Surprise Message Checker — triggers left-to-right card flip
         function checkForSurprise(messages) {
             for (let i = messages.length - 1; i >= Math.max(0, messages.length - 10); --i) {
                 const msg = messages[i].message || '';
