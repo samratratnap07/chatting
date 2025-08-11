@@ -1,179 +1,211 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nick & Saisha Chat</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nick & Saisha Chat</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
 </head>
 <body>
-    <div class="bg-blur-lights"></div>
+  <div class="bg-blur-lights"></div>
 
-    <header>
-        <span class="header-title">Nick & Saisha Chat</span>
-        <form method="POST" action="/logout" style="margin:0;display:inline;">
-            <button type="submit" class="logout-btn">Logout</button>
-        </form>
-    </header>
+  <header>
+    <span class="header-title">Nick & Saisha Chat</span>
+    <form method="POST" action="/logout" style="margin:0;display:inline;">
+      <button type="submit" class="logout-btn">Logout</button>
+    </form>
+  </header>
 
-    <!-- Flip Card Wrapper -->
-    <div id="flip-card" class="flip-card">
-        <div class="flip-card-inner">
-            <div class="flip-card-front">
-                <!-- Front: Normal Chat UI -->
-                <div class="main-chat-wrapper">
-                    <div class="chat-box" id="chat-box"></div>
-                    <form id="chat-form">
-                        <input type="text" id="message" placeholder="Type a message..." autocomplete="off" required>
-                        <button type="submit">Send</button>
-                    </form>
-                </div>
-            </div>
-            <div class="flip-card-back">
-                <h2>This is the end</h2>
-                <button id="click-me-btn" class="click-me-btn">Click Me</button>
+  <!-- Flip Card Wrapper -->
+  <div id="flip-card" class="flip-card">
+    <div class="flip-card-inner">
+      
+      <!-- Front side: normal chat UI with animated glowing square -->
+      <div class="flip-card-front">
+        <div class="main-chat-wrapper">
+          <div class="chat-box" id="chat-box">
+            <!-- Animated glowing square -->
+            <div class="animated-square"></div>
+          </div>
+          <form id="chat-form">
+            <input type="text" id="message" placeholder="Type a message..." autocomplete="off" required />
+            <button type="submit">Send</button>
+          </form>
+        </div>
+      </div>
+      
+      <!-- Back side: rotateY(180deg) with animated typing text and button -->
+      <div class="flip-card-back">
+        <h2 class="typing-text" aria-label="This is the end"></h2>
+        <button id="click-me-btn" class="click-me-btn">Click Me</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Edit Popup -->
+  <div id="edit-popup" style="display:none"></div>
+
+  <script>
+    const chatBox = document.getElementById("chat-box");
+    const form = document.getElementById("chat-form");
+    const messageInput = document.getElementById("message");
+    const username = "{{ username }}";
+
+    function scrollToBottom() {
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function createMsgActions(msgDiv, msgId, msgText) {
+      msgDiv.querySelectorAll(".msg-actions").forEach((el) => el.remove());
+      const actionsPopup = document.createElement("div");
+      actionsPopup.className = "msg-actions";
+      actionsPopup.innerHTML = `
+        <button onclick="editMsgUI(${msgId}, this)">Edit</button>
+        <button onclick="copyToClipboard('${msgText.replace(/'/g, "\\'")}')">Copy</button>
+        <button onclick="deleteMsg(${msgId}, this)">Delete</button>
+      `;
+      msgDiv.appendChild(actionsPopup);
+      setTimeout(() => actionsPopup.classList.add("show"), 15);
+      return actionsPopup;
+    }
+
+    document.body.addEventListener("click", function(e) {
+      document.querySelectorAll(".msg-actions.show").forEach(el => {
+        if (!el.parentNode.contains(e.target)) el.classList.remove("show");
+      });
+      const editPopup = document.getElementById('edit-popup');
+      if (editPopup.style.display === 'flex' && e.target === editPopup) editPopup.style.display = 'none';
+    });
+
+    function editMsgUI(msgId, btn) {
+      document.querySelectorAll(".msg-actions.show").forEach(el => el.classList.remove("show"));
+      let msgBubble = btn.closest('.message').querySelector('.bubble');
+      let oldText = msgBubble.innerText;
+      const editPopup = document.getElementById('edit-popup');
+      editPopup.style.display = 'flex';
+      editPopup.innerHTML = `
+        <div class="edit-popup">
+            <div class="edit-box">
+              <b>Edit Message</b>
+              <input type="text" id="edit-msg-input" value="${oldText.replace(/"/g, '&quot;')}">
+              <div class="actions">
+                <button onclick="submitEdit(${msgId})">Save</button>
+                <button onclick="document.getElementById('edit-popup').style.display='none'">Cancel</button>
+              </div>
             </div>
         </div>
-    </div>
-
-    <!-- Edit Popup -->
-    <div id="edit-popup" style="display:none"></div>
-
-    <script>
-        const chatBox = document.getElementById("chat-box");
-        const form = document.getElementById("chat-form");
-        const messageInput = document.getElementById("message");
-        const username = "{{ username }}";
-
-        function scrollToBottom() {
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        function createMsgActions(msgDiv, msgId, msgText) {
-            msgDiv.querySelectorAll(".msg-actions").forEach(el=>el.remove());
-            const actionsPopup = document.createElement("div");
-            actionsPopup.className = "msg-actions";
-            actionsPopup.innerHTML = `
-                <button onclick="editMsgUI(${msgId}, this)">Edit</button>
-                <button onclick="copyToClipboard('${msgText.replace(/'/g,"\\'")}')">Copy</button>
-                <button onclick="deleteMsg(${msgId}, this)">Delete</button>
-            `;
-            msgDiv.appendChild(actionsPopup);
-            setTimeout(() => actionsPopup.classList.add('show'), 15);
-            return actionsPopup;
-        }
-
-        document.body.addEventListener('click', function(e){
-            document.querySelectorAll(".msg-actions.show").forEach(el => {
-                if(!el.parentNode.contains(e.target)) el.classList.remove("show");
-            });
-            const editPopup = document.getElementById('edit-popup');
-            if(editPopup.style.display=='flex' && e.target===editPopup) editPopup.style.display='none';
+      `;
+      setTimeout(() => document.getElementById('edit-msg-input').focus(), 60);
+    }
+    function submitEdit(msgId) {
+      const newText = document.getElementById('edit-msg-input').value;
+      fetch("/edit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ msg_id: msgId, new_text: newText })
+      }).then(r => r.json())
+        .then(res => {
+          document.getElementById('edit-popup').style.display = 'none';
+          loadMessages();
         });
+    }
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text);
+      alert('Message copied!');
+    }
+    function deleteMsg(msgId, btn) {
+      fetch("/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ msg_id: msgId })
+      }).then(r => r.json())
+        .then(res => {
+          loadMessages();
+        });
+    }
 
-        function editMsgUI(msgId, btn) {
-            document.querySelectorAll(".msg-actions.show").forEach(el=>el.classList.remove("show"));
-            let msgBubble = btn.closest('.message').querySelector('.bubble');
-            let oldText = msgBubble.innerText;
-            const editPopup = document.getElementById('edit-popup');
-            editPopup.style.display='flex';
-            editPopup.innerHTML = `
-                <div class="edit-popup">
-                    <div class="edit-box">
-                      <b>Edit Message</b>
-                      <input type="text" id="edit-msg-input" value="${oldText.replace(/"/g,'&quot;')}">
-                      <div class="actions">
-                        <button onclick="submitEdit(${msgId})">Save</button>
-                        <button onclick="document.getElementById('edit-popup').style.display='none'">Cancel</button>
-                      </div>
-                    </div>
-                </div>
+    function loadMessages() {
+      fetch("/messages")
+        .then(res => res.json())
+        .then(data => {
+          chatBox.innerHTML = "";
+          data.messages.forEach((msg, idx) => {
+            let msgDiv = document.createElement("div");
+            msgDiv.classList.add("message");
+            msgDiv.classList.add(msg.sender === username ? "sent" : "received");
+            msgDiv.innerHTML = `
+                <div class="username">${msg.sender}</div>
+                <div class="bubble">${msg.message}</div>
+                <div class="timestamp">${msg.timestamp}</div>
             `;
-            setTimeout(() => document.getElementById('edit-msg-input').focus(),60);
-        }
-        function submitEdit(msgId){
-            const newText = document.getElementById('edit-msg-input').value;
-            fetch("/edit", {
-                method:"POST",
-                headers: {"Content-Type":"application/json"},
-                body: JSON.stringify({msg_id:msgId, new_text:newText})
-            }).then(r=>r.json())
-             .then(res=>{
-                document.getElementById('edit-popup').style.display='none';
-                loadMessages();
-             });
-        }
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text);
-            alert('Message copied!');
-        }
-        function deleteMsg(msgId, btn){
-            fetch("/delete",{
-                method:"POST",
-                headers: {"Content-Type":"application/json"},
-                body: JSON.stringify({msg_id:msgId})
-            }).then(r=>r.json())
-              .then(res=>{
-                loadMessages();
-              });
-        }
+            const msgId = msg.id !== undefined ? msg.id : idx;
+            msgDiv.onclick = function(e) {
+              createMsgActions(msgDiv, msgId, msg.message);
+              e.stopPropagation();
+            };
+            chatBox.appendChild(msgDiv);
+          });
+          scrollToBottom();
+        });
+    }
 
-        function loadMessages() {
-            fetch("/messages")
-                .then(res => res.json())
-                .then(data => {
-                    chatBox.innerHTML = "";
-                    data.messages.forEach((msg, idx) => {
-                        let msgDiv = document.createElement("div");
-                        msgDiv.classList.add("message");
-                        msgDiv.classList.add(msg.sender === username ? "sent" : "received");
-                        msgDiv.innerHTML = `
-                            <div class="username">${msg.sender}</div>
-                            <div class="bubble">${msg.message}</div>
-                            <div class="timestamp">${msg.timestamp}</div>
-                        `;
-                        const msgId = msg.id !== undefined ? msg.id : idx;
-                        msgDiv.onclick = function(e){
-                            createMsgActions(msgDiv, msgId, msg.message);
-                            e.stopPropagation();
-                        };
-                        chatBox.appendChild(msgDiv);
-                    });
-                    scrollToBottom();
-                });
+    // Typing effect for the back side text
+    function typeWriter(text, element, speed=100) {
+      let i = 0;
+      element.textContent = "";
+      function type() {
+        if (i < text.length) {
+          element.textContent += text.charAt(i);
+          i++;
+          setTimeout(type, speed);
         }
+      }
+      type();
+    }
 
-        form.addEventListener("submit", e => {
-            e.preventDefault();
-            const text = messageInput.value.trim();
-            if (!text) return;
-            fetch("/send", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({message: text})
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    // Flip only if message is Happy Birthday
-                    if (/^happy\s*birthday$/i.test(text) || /^HB$/i.test(text)) {
-                        document.getElementById("flip-card").classList.add("flipped");
-                    }
-                    messageInput.value = "";
-                    loadMessages();
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+      const text = messageInput.value.trim();
+      if (!text) return;
+
+      fetch("/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          // Trigger flip with 3-second delay only if exact "Happy Birthday" message
+          if (/^happy\s*birthday$/i.test(text)) {
+            setTimeout(() => {
+              const flipCard = document.getElementById("flip-card");
+              if (flipCard) {
+                flipCard.classList.add("flipped");
+                const typingEl = document.querySelector(".flip-card-back .typing-text");
+                if (typingEl) {
+                  // Start typing animation text
+                  typeWriter("This is the end", typingEl, 150);
                 }
-            });
-        });
+              }
+            }, 3000); // Delay 3 seconds before flip
+          }
+          messageInput.value = "";
+          loadMessages();
+        }
+      });
+    });
 
-        // Click Me button link
-        document.addEventListener("click", e => {
-            if (e.target.id === "click-me-btn") {
-                window.location.href = "https://example.com"; // replace with your URL
-            }
-        });
+    // Click Me button link click handler
+    document.addEventListener("click", e => {
+      if (e.target.id === "click-me-btn") {
+        window.location.href = "https://example.com"; // Replace with your desired link
+      }
+    });
 
-        setInterval(loadMessages, 2000);
-        loadMessages();
-    </script>
+    setInterval(loadMessages, 2000);
+    loadMessages();
+  </script>
 </body>
 </html>
