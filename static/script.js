@@ -3,6 +3,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const messageInput = document.getElementById("message");
     const chatBox = document.getElementById("chat-box");
 
+    // Flip-card element reference (make sure it's in your HTML)
+    const flipCardInner = document.querySelector(".flip-card-inner");
+
     // Handle sending messages
     messageForm.addEventListener("submit", function (event) {
         event.preventDefault();
@@ -18,17 +21,6 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // --- Flip trigger ONLY for "Happy Birthday" ---
-                if (/^happy\s*birthday$/i.test(msg) || /^HB$/i.test(msg)) {
-                    setTimeout(() => {
-                        const flipCard = document.getElementById("flip-card");
-                        if (flipCard) {
-                            flipCard.classList.add("flipped");
-                        }
-                    }, 3000); // 3 second delay
-                }
-                // ---------------------------------------------
-
                 messageInput.value = "";
                 loadMessages(); // Reload messages instantly
             }
@@ -41,12 +33,29 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(response => response.json())
             .then(data => {
                 chatBox.innerHTML = "";
+                let birthdayFound = false; // Track if message contains "Happy Birthday"
+
                 data.messages.forEach(msg => {
                     const div = document.createElement("div");
                     div.classList.add("chat-message");
                     div.textContent = msg;
                     chatBox.appendChild(div);
+
+                    // Check for birthday trigger (case insensitive)
+                    if (typeof msg === "string" && msg.toLowerCase().includes("happy birthday")) {
+                        birthdayFound = true;
+                    }
                 });
+
+                // Flip card animation trigger
+                if (flipCardInner) {
+                    if (birthdayFound) {
+                        flipCardInner.classList.add("flip");
+                    } else {
+                        flipCardInner.classList.remove("flip");
+                    }
+                }
+
                 chatBox.scrollTop = chatBox.scrollHeight;
             });
     }
