@@ -5,150 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nick & Saisha Chat</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <style>
-      /* ==== Chat background color (change to taste) ==== */
-      .main-chat-wrapper {
-        background: linear-gradient(135deg, #2d3e60 70%, #426899 100%);
-        border-radius: 14px;
-        padding-bottom: 16px;
-        min-height: 350px;
-      }
-
-      /* ==== Card (phone-style square) updated colors & sizes ==== */
-      .phone-square-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-top: 18px;
-        margin-bottom: 12px;
-        height: 210px; /* or as fits your layout */
-      }
-      .phone-square {
-        position: relative;
-        width: 144px;    /* left/right side: ~3in */
-        height: 192px;   /* up/down side: ~4in */
-        perspective: 1200px;
-        margin: 0 auto;
-      }
-      .phone-square .base {
-        width: 144px;
-        height: 192px;
-        background: linear-gradient(100deg,#45A4FF 60%, #DF38A1 100%);
-        border-radius: 16px;
-        border: 2px solid #555;
-        box-shadow: 0 9px 29px #18133778;
-        position: absolute;
-        left: 0; top: 0;
-        z-index: 1;
-      }
-      .phone-square .lid {
-        width: 144px;
-        height: 192px;
-        background: linear-gradient(100deg,#4A4AE6 5%, #DF38A1 80%);
-        border-radius: 16px;
-        border: 2px solid #555;
-        box-shadow: 0 2px 17px #3334;
-        position: absolute;
-        left: 0; top: 0;
-        z-index: 2;
-        transform-origin: right center;
-        transition: transform 0.7s cubic-bezier(.7,1.8,.57,.91);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        backface-visibility: hidden;
-      }
-      .phone-square .birthday-message {
-        display: none;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 24px 0;
-        width: 100%; height: 100%;
-      }
-      .phone-square.flipped .lid {
-        transform: rotateY(180deg);
-      }
-      .phone-square.flipped .birthday-message {
-        display: flex;
-      }
-      .phone-square .birthday-message p {
-        font-size: 1.18rem;
-        font-weight: bold;
-        color: #fff;
-        margin-bottom: 14px;
-        text-shadow: 1px 2px 7px #222, 0 0 2px #fff8;
-        letter-spacing: 1px;
-      }
-      #surpriseBtn {
-        background: linear-gradient(88deg,#fe3dea,#00f0ff);
-        color: #fff; font-weight: bold;
-        border: none;
-        padding: 11px 21px;
-        border-radius: 10px;
-        font-size: 1.05rem;
-        box-shadow: 0 2px 14px #349eed44;
-        cursor: pointer;
-        margin-top: 8px;
-        transition: filter .17s;
-      }
-      #surpriseBtn:hover {
-        filter: brightness(1.14);
-      }
-    </style>
 </head>
 <body>
     <div class="bg-blur-lights"></div>
+
     <header>
         <span class="header-title">Nick & Saisha Chat</span>
         <form method="POST" action="/logout" style="margin:0;display:inline;">
             <button type="submit" class="logout-btn">Logout</button>
         </form>
     </header>
-    <!-- PHONE STYLE CARD (centered, updated colors, left-right flip) -->
-    <div class="phone-square-container">
-      <div class="phone-square" id="birthdaySquare">
-        <div class="lid" id="squareLid">
-          <div class="birthday-message" id="birthdayMessage">
-            <p>Happy Birthday to You Bro</p>
-            <!-- Replace link below! -->
-            <button id="surpriseBtn" onclick="window.open('https://your-link-here.com')">Click Here</button>
-          </div>
-        </div>
-        <div class="base"></div>
-      </div>
-    </div>
-    <!-- END phone card -->
+
     <div class="main-chat-wrapper">
+        
+        <!-- ===== Big Square in Center ===== -->
+        <div id="big-square" style="display:none;">
+            <div id="square-text">This is the end</div>
+            <button id="square-btn">Click me</button>
+        </div>
+        <!-- ===== End Square ===== -->
+
         <div class="chat-box" id="chat-box"></div>
         <form id="chat-form">
             <input type="text" id="message" placeholder="Type a message..." autocomplete="off" required>
             <button type="submit">Send</button>
         </form>
     </div>
-    <div id="edit-popup" style="display:none"></div>
-    <script>
-        // ==== Birthday Card Flip logic (left-right turn, text always correct way up) ====
-        function triggerBirthdaySurprise() {
-            document.getElementById('birthdaySquare').classList.add('flipped');
-        }
-        function resetBirthdaySurprise() {
-            document.getElementById('birthdaySquare').classList.remove('flipped');
-        }
 
-        // <<== CHAT LOGIC (as before, unchanged except for surprise checker) ==>>
+    <div id="edit-popup" style="display:none"></div>
+
+    <script>
         const chatBox = document.getElementById("chat-box");
         const form = document.getElementById("chat-form");
         const messageInput = document.getElementById("message");
         const username = "{{ username }}";
         let editingMsgId = null;
 
+        // Scroll to bottom
         function scrollToBottom() {
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
+        // Function to create message action menu
         function createMsgActions(msgDiv, msgId, msgText) {
-            msgDiv.querySelectorAll(".msg-actions").forEach(el=>el.remove());
+            msgDiv.querySelectorAll(".msg-actions").forEach(el => el.remove());
             const actionsPopup = document.createElement("div");
             actionsPopup.className = "msg-actions";
             actionsPopup.innerHTML = `
@@ -161,6 +61,7 @@
             return actionsPopup;
         }
 
+        // Close click outside
         document.body.addEventListener('click', function(e){
             document.querySelectorAll(".msg-actions.show").forEach(el => {
                 if(!el.parentNode.contains(e.target)) el.classList.remove("show");
@@ -170,11 +71,11 @@
         });
 
         function editMsgUI(msgId, btn) {
-            document.querySelectorAll(".msg-actions.show").forEach(el=>el.classList.remove("show"));
+            document.querySelectorAll(".msg-actions.show").forEach(el => el.classList.remove("show"));
             let msgBubble = btn.closest('.message').querySelector('.bubble');
             let oldText = msgBubble.innerText;
             const editPopup = document.getElementById('edit-popup');
-            editPopup.style.display='flex';
+            editPopup.style.display = 'flex';
             editPopup.innerHTML = `
                 <div class="edit-popup">
                     <div class="edit-box">
@@ -187,47 +88,39 @@
                     </div>
                 </div>
             `;
-            setTimeout(() => document.getElementById('edit-msg-input').focus(),60);
+            setTimeout(() => document.getElementById('edit-msg-input').focus(), 60);
         }
-        function submitEdit(msgId){
+
+        function submitEdit(msgId) {
             const newText = document.getElementById('edit-msg-input').value;
             fetch("/edit", {
-                method:"POST",
+                method: "POST",
                 headers: {"Content-Type":"application/json"},
                 body: JSON.stringify({msg_id:msgId, new_text:newText})
-            }).then(r=>r.json())
-             .then(res=>{
-                document.getElementById('edit-popup').style.display='none';
-                loadMessages();
-             });
-        }
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text);
-            alert('Message copied!');
-        }
-        function deleteMsg(msgId, btn){
-            fetch("/delete",{
-                method:"POST",
-                headers: {"Content-Type":"application/json"},
-                body: JSON.stringify({msg_id:msgId})
-            }).then(r=>r.json())
-              .then(res=>{
+            }).then(r => r.json())
+              .then(res => {
+                document.getElementById('edit-popup').style.display = 'none';
                 loadMessages();
               });
         }
 
-        // Surprise Message Checker — triggers left-to-right card flip
-        function checkForSurprise(messages) {
-            for (let i = messages.length - 1; i >= Math.max(0, messages.length - 10); --i) {
-                const msg = messages[i].message || '';
-                if (msg.toLowerCase().includes("surprise pesh kiya jaye")) {
-                    triggerBirthdaySurprise();
-                    return;
-                }
-            }
-            resetBirthdaySurprise();
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text);
+            alert('Message copied!');
         }
 
+        function deleteMsg(msgId, btn) {
+            fetch("/delete", {
+                method: "POST",
+                headers: {"Content-Type":"application/json"},
+                body: JSON.stringify({msg_id:msgId})
+            }).then(r => r.json())
+              .then(res => {
+                loadMessages();
+              });
+        }
+
+        // Load messages from server + detect Happy Birthday
         function loadMessages() {
             fetch("/messages")
                 .then(res => res.json())
@@ -248,11 +141,17 @@
                             e.stopPropagation();
                         };
                         chatBox.appendChild(msgDiv);
+
+                        // Detect "Happy Birthday"
+                        if(msg.message.toLowerCase().includes("happy birthday")){
+                            document.getElementById('big-square').style.display = 'flex';
+                        }
                     });
                     scrollToBottom();
-                    checkForSurprise(data.messages);
                 });
         }
+
+        // Send new message
         form.addEventListener("submit", e => {
             e.preventDefault();
             const text = messageInput.value.trim();
@@ -270,6 +169,12 @@
                 }
             });
         });
+
+        // Square button click handler (open link)
+        document.getElementById('square-btn').addEventListener('click', function(){
+            window.location.href = "https://example.com"; // apna link yaha set karein
+        });
+
         setInterval(loadMessages, 2000);
         loadMessages();
     </script>
