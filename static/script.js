@@ -1,13 +1,15 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const messageForm = document.getElementById("message-form");
+    const messageForm = document.getElementById("chat-form"); // aapke html me form id 'chat-form' tha
     const messageInput = document.getElementById("message");
     const chatBox = document.getElementById("chat-box");
 
-    // Big Square elements
     const bigSquare = document.getElementById("big-square");
+    const squareText = document.getElementById("square-text");
     const squareBtn = document.getElementById("square-btn");
 
-    // 🎯 Send message
+    let bigSquareVisible = false;
+
+    // Send message handler
     messageForm.addEventListener("submit", function (event) {
         event.preventDefault();
 
@@ -23,40 +25,62 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(data => {
             if (data.success) {
                 messageInput.value = "";
-                loadMessages(); // Reload instantly
+                loadMessages(); // Reload immediately
             }
         });
     });
 
-    // 🎯 Load messages from server
+    // Toggle big square show/flip function
+    function toggleBigSquare() {
+        if (!bigSquareVisible) {
+            bigSquare.style.display = "flex";
+            squareText.style.display = "block";
+            squareBtn.style.display = "inline-block";
+            bigSquareVisible = true;
+        } else {
+            bigSquare.classList.add("inner-flip");
+
+            setTimeout(() => {
+                // Toggle visibility of text and button
+                if (squareText.style.display === "none") {
+                    squareText.style.display = "block";
+                    squareBtn.style.display = "inline-block";
+                } else {
+                    squareText.style.display = "none";
+                    squareBtn.style.display = "none";
+                }
+                bigSquare.classList.remove("inner-flip");
+            }, 1000); // matches animation duration
+        }
+    }
+
+    // Load messages function
     function loadMessages() {
         fetch("/messages")
             .then(response => response.json())
             .then(data => {
                 chatBox.innerHTML = "";
-
                 data.messages.forEach(msg => {
                     const div = document.createElement("div");
                     div.classList.add("chat-message");
-                    div.textContent = msg;
+                    // Display message text, you can enhance with username, timestamp as per your original code
+                    div.textContent = msg.message || msg; // support either
                     chatBox.appendChild(div);
 
-                    // ✅ Detect Happy Birthday (case-insensitive)
-                    if (String(msg).toLowerCase().includes("happy birthday")) {
-                        bigSquare.style.display = "flex"; // Show big square
+                    if (String(msg.message || msg).toLowerCase().includes("happy birthday")) {
+                        toggleBigSquare();
                     }
                 });
-
                 chatBox.scrollTop = chatBox.scrollHeight;
             });
     }
 
-    // 🎯 Auto-refresh messages
+    // Auto update messages every 2 seconds
     setInterval(loadMessages, 2000);
     loadMessages();
 
-    // 🎯 Square button click → open link
+    // Button click opens link in same tab
     squareBtn.addEventListener("click", function () {
-        window.location.href = "https://example.com"; // <-- apna link yaha dalen
+        window.location.href = "https://example.com"; // Change to your desired URL
     });
 });
