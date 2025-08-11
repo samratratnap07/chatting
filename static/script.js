@@ -38,11 +38,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 data.messages.forEach(msg => {
                     const div = document.createElement("div");
                     div.classList.add("chat-message");
-                    div.textContent = msg;
+
+                    // Determine actual text from msg
+                    let msgText = "";
+                    if (typeof msg === "string") {
+                        msgText = msg;
+                    } else if (msg && typeof msg.message === "string") {
+                        msgText = msg.message;
+                    } else {
+                        msgText = String(msg || "");
+                    }
+
+                    div.textContent = msgText;
                     chatBox.appendChild(div);
 
-                    // Check for birthday trigger (case insensitive)
-                    if (typeof msg === "string" && msg.toLowerCase().includes("happy birthday")) {
+                    // Check trigger
+                    if (msgText.toLowerCase().includes("happy birthday")) {
                         birthdayFound = true;
                     }
                 });
