@@ -266,15 +266,17 @@ button:hover {
 @media (max-width: 480px) {
     .bubble { font-size: 14px }
 }
-/* Flip Card Animation Styles */
+/* Flip Card fixed center */
 .flip-card-wrapper {
-    display: flex;
-    justify-content: center;
-    margin: 20px 0;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     perspective: 1000px;
-    z-index: 5;
+    z-index: 999;
 }
 
+/* Size */
 .flip-card {
     background-color: transparent;
     width: 150px;
@@ -289,8 +291,8 @@ button:hover {
     transform-style: preserve-3d;
 }
 
-/* Flip effect trigger */
-.flip-card:hover .flip-card-inner {
+/* Flip trigger class */
+.flip-card-inner.flip {
     transform: rotateY(180deg);
 }
 
@@ -322,7 +324,6 @@ button:hover {
     padding: 10px;
 }
 
-/* Back Text */
 .flip-card-back h2 {
     font-family: 'Quicksand', Arial, sans-serif;
     font-size: 16px;
@@ -330,7 +331,6 @@ button:hover {
     color: #ff71b8;
 }
 
-/* Button Styling */
 .end-btn {
     background: linear-gradient(100deg,#6d63ff,#ff0090);
     border: none;
