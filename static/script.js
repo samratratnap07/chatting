@@ -18,6 +18,17 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                // --- Flip trigger ONLY for "Happy Birthday" ---
+                if (/^happy\s*birthday$/i.test(msg) || /^HB$/i.test(msg)) {
+                    setTimeout(() => {
+                        const flipCard = document.getElementById("flip-card");
+                        if (flipCard) {
+                            flipCard.classList.add("flipped");
+                        }
+                    }, 3000); // 3 second delay
+                }
+                // ---------------------------------------------
+
                 messageInput.value = "";
                 loadMessages(); // Reload messages instantly
             }
