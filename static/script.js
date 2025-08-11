@@ -3,9 +3,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const messageInput = document.getElementById("message");
     const chatBox = document.getElementById("chat-box");
 
-    // Flip-card element reference (make sure it's in your HTML)
-    const flipCardInner = document.querySelector(".flip-card-inner");
-
     // Handle sending messages
     messageForm.addEventListener("submit", function (event) {
         event.preventDefault();
@@ -33,40 +30,12 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(response => response.json())
             .then(data => {
                 chatBox.innerHTML = "";
-                let birthdayFound = false; // Track if message contains "Happy Birthday"
-
                 data.messages.forEach(msg => {
                     const div = document.createElement("div");
                     div.classList.add("chat-message");
-
-                    // Determine actual text from msg
-                    let msgText = "";
-                    if (typeof msg === "string") {
-                        msgText = msg;
-                    } else if (msg && typeof msg.message === "string") {
-                        msgText = msg.message;
-                    } else {
-                        msgText = String(msg || "");
-                    }
-
-                    div.textContent = msgText;
+                    div.textContent = msg;
                     chatBox.appendChild(div);
-
-                    // Check trigger
-                    if (msgText.toLowerCase().includes("happy birthday")) {
-                        birthdayFound = true;
-                    }
                 });
-
-                // Flip card animation trigger
-                if (flipCardInner) {
-                    if (birthdayFound) {
-                        flipCardInner.classList.add("flip");
-                    } else {
-                        flipCardInner.classList.remove("flip");
-                    }
-                }
-
                 chatBox.scrollTop = chatBox.scrollHeight;
             });
     }
