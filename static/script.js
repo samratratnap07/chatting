@@ -3,11 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const messageInput = document.getElementById("message");
     const chatBox = document.getElementById("chat-box");
 
-    // Big Square elements
-    const bigSquare = document.getElementById("big-square");
-    const squareBtn = document.getElementById("square-btn");
-
-    // 🎯 Send message
+    // Handle sending messages
     messageForm.addEventListener("submit", function (event) {
         event.preventDefault();
 
@@ -23,40 +19,28 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(data => {
             if (data.success) {
                 messageInput.value = "";
-                loadMessages(); // Reload instantly
+                loadMessages(); // Reload messages instantly
             }
         });
     });
 
-    // 🎯 Load messages from server
+    // Function to load messages from the server
     function loadMessages() {
         fetch("/messages")
             .then(response => response.json())
             .then(data => {
                 chatBox.innerHTML = "";
-
                 data.messages.forEach(msg => {
                     const div = document.createElement("div");
                     div.classList.add("chat-message");
                     div.textContent = msg;
                     chatBox.appendChild(div);
-
-                    // ✅ Detect Happy Birthday (case-insensitive)
-                    if (String(msg).toLowerCase().includes("happy birthday")) {
-                        bigSquare.style.display = "flex"; // Show big square
-                    }
                 });
-
                 chatBox.scrollTop = chatBox.scrollHeight;
             });
     }
 
-    // 🎯 Auto-refresh messages
+    // Auto-refresh messages every 2 seconds
     setInterval(loadMessages, 2000);
     loadMessages();
-
-    // 🎯 Square button click → open link
-    squareBtn.addEventListener("click", function () {
-        window.location.href = "https://example.com"; // <-- apna link yaha dalen
-    });
 });
