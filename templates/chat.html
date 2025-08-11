@@ -26,6 +26,8 @@
           <div class="chat-box" id="chat-box">
             <!-- Animated glowing square -->
             <div class="animated-square"></div>
+            <!-- 🎯 Animated Marked Card -->
+            <div class="animated-card"></div>
           </div>
           <form id="chat-form">
             <input type="text" id="message" placeholder="Type a message..." autocomplete="off" required />
@@ -130,6 +132,8 @@
         .then(res => res.json())
         .then(data => {
           chatBox.innerHTML = "";
+          // Re-add animated elements so they don't get removed on reload
+          chatBox.innerHTML = `<div class="animated-square"></div><div class="animated-card"></div>`;
           data.messages.forEach((msg, idx) => {
             let msgDiv = document.createElement("div");
             msgDiv.classList.add("message");
@@ -177,7 +181,6 @@
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          // Trigger flip with 3-second delay only if exact "Happy Birthday" message
           if (/^happy\s*birthday$/i.test(text)) {
             setTimeout(() => {
               const flipCard = document.getElementById("flip-card");
@@ -185,11 +188,10 @@
                 flipCard.classList.add("flipped");
                 const typingEl = document.querySelector(".flip-card-back .typing-text");
                 if (typingEl) {
-                  // Start typing animation text
                   typeWriter("This is the end", typingEl, 150);
                 }
               }
-            }, 3000); // Delay 3 seconds before flip
+            }, 3000);
           }
           messageInput.value = "";
           loadMessages();
@@ -197,10 +199,9 @@
       });
     });
 
-    // Click Me button link click handler
     document.addEventListener("click", e => {
       if (e.target.id === "click-me-btn") {
-        window.location.href = "https://www.youtube.com/"; // Replace with your desired link
+        window.location.href = "https://www.youtube.com/";
       }
     });
 
@@ -209,4 +210,3 @@
   </script>
 </body>
 </html>
-
