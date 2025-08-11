@@ -3,75 +3,66 @@ document.addEventListener("DOMContentLoaded", function () {
     const messageInput = document.getElementById("message");
     const chatBox = document.getElementById("chat-box");
 
-    const flipSquare = document.getElementById("flip-square");
-    const cube = flipSquare.querySelector(".cube");
+    // Flip card elements
+    const flipInner = document.querySelector("#flip-card .flip-inner");
     const squareBtn = document.getElementById("square-btn");
 
-    let squareVisible = false;
-    let flipped = false;
+    let flipped = false; // flip only once
 
-    // Send message handler
+    // Send message
     messageForm.addEventListener("submit", function (event) {
         event.preventDefault();
-
         const msg = messageInput.value.trim();
         if (msg === "") return;
 
         fetch("/send", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: msg }),
+            body: JSON.stringify({ message: msg })
         })
-            .then((response) => response.json())
-            .then((data) => {
-                if (data.success) {
-                    messageInput.value = "";
-                    loadMessages();
-                }
-            });
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                messageInput.value = "";
+                loadMessages();
+            }
+        });
     });
 
-    // Load messages and handle "Happy Birthday" trigger
+    // Load messages
     function loadMessages() {
         fetch("/messages")
-            .then((response) => response.json())
-            .then((data) => {
+            .then(res => res.json())
+            .then(data => {
                 chatBox.innerHTML = "";
+                let triggerFlip = false;
 
-                data.messages.forEach((msg) => {
+                data.messages.forEach(msg => {
+                    const text = msg.message || msg;
                     const div = document.createElement("div");
                     div.classList.add("chat-message");
-                    div.textContent = msg.message || msg;
+                    div.textContent = text;
                     chatBox.appendChild(div);
 
-                    if (String(msg.message || msg).toLowerCase().includes("happy birthday")) {
-                        if (!squareVisible) {
-                            flipSquare.style.display = "block";
-                            squareVisible = true;
-                            flipped = false;
-                            cube.classList.remove("flipped");
-                        } else {
-                            // Flip the cube on repeated trigger
-                            flipped = !flipped;
-                            if (flipped) {
-                                cube.classList.add("flipped");
-                            } else {
-                                cube.classList.remove("flipped");
-                            }
-                        }
+                    if (!flipped && String(text).toLowerCase().includes("happy birthday")) {
+                        triggerFlip = true;
                     }
                 });
 
                 chatBox.scrollTop = chatBox.scrollHeight;
+
+                if (triggerFlip && !flipped) {
+                    flipped = true;
+                    flipInner.classList.add("flipped");
+                }
             });
     }
 
-    // Button click to open your link in the same tab
-    squareBtn.addEventListener("click", function () {
-        window.location.href = "https://example.com"; // Replace with your final link
-    });
-
-    // Auto refresh messages every 2 seconds
     setInterval(loadMessages, 2000);
     loadMessages();
+
+    // Button link
+    squareBtn.addEventListener("click", function () {
+        window.location.href = "https://example.com"; // change to your URL
+    });
 });
