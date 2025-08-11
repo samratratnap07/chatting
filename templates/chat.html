@@ -8,32 +8,47 @@
 </head>
 <body>
     <div class="bg-blur-lights"></div>
+
     <header>
         <span class="header-title">Nick & Saisha Chat</span>
         <form method="POST" action="/logout" style="margin:0;display:inline;">
             <button type="submit" class="logout-btn">Logout</button>
         </form>
     </header>
-    <div class="main-chat-wrapper">
-        <div class="chat-box" id="chat-box"></div>
-        <form id="chat-form">
-            <input type="text" id="message" placeholder="Type a message..." autocomplete="off" required>
-            <button type="submit">Send</button>
-        </form>
+
+    <!-- Flip Card Wrapper -->
+    <div id="flip-card" class="flip-card">
+        <div class="flip-card-inner">
+            <div class="flip-card-front">
+                <!-- Front: Normal Chat UI -->
+                <div class="main-chat-wrapper">
+                    <div class="chat-box" id="chat-box"></div>
+                    <form id="chat-form">
+                        <input type="text" id="message" placeholder="Type a message..." autocomplete="off" required>
+                        <button type="submit">Send</button>
+                    </form>
+                </div>
+            </div>
+            <div class="flip-card-back">
+                <h2>This is the end</h2>
+                <button id="click-me-btn" class="click-me-btn">Click Me</button>
+            </div>
+        </div>
     </div>
+
+    <!-- Edit Popup -->
     <div id="edit-popup" style="display:none"></div>
+
     <script>
         const chatBox = document.getElementById("chat-box");
         const form = document.getElementById("chat-form");
         const messageInput = document.getElementById("message");
         const username = "{{ username }}";
-        let editingMsgId = null;
 
         function scrollToBottom() {
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // UI: Create action/popup menu
         function createMsgActions(msgDiv, msgId, msgText) {
             msgDiv.querySelectorAll(".msg-actions").forEach(el=>el.remove());
             const actionsPopup = document.createElement("div");
@@ -48,12 +63,10 @@
             return actionsPopup;
         }
 
-        // Message menu will NOT autoclose by itself; only close when user clicks elsewhere:
         document.body.addEventListener('click', function(e){
             document.querySelectorAll(".msg-actions.show").forEach(el => {
                 if(!el.parentNode.contains(e.target)) el.classList.remove("show");
             });
-            // Edit popup autoclose if click background
             const editPopup = document.getElementById('edit-popup');
             if(editPopup.style.display=='flex' && e.target===editPopup) editPopup.style.display='none';
         });
@@ -80,7 +93,6 @@
         }
         function submitEdit(msgId){
             const newText = document.getElementById('edit-msg-input').value;
-            // Dummy Ajax request; replace with backend logic
             fetch("/edit", {
                 method:"POST",
                 headers: {"Content-Type":"application/json"},
@@ -96,7 +108,6 @@
             alert('Message copied!');
         }
         function deleteMsg(msgId, btn){
-            // Dummy function! Backend required.
             fetch("/delete",{
                 method:"POST",
                 headers: {"Content-Type":"application/json"},
@@ -107,7 +118,6 @@
               });
         }
 
-        // Render messages (sample ids used for demo)
         function loadMessages() {
             fetch("/messages")
                 .then(res => res.json())
@@ -122,9 +132,8 @@
                             <div class="bubble">${msg.message}</div>
                             <div class="timestamp">${msg.timestamp}</div>
                         `;
-                        const msgId = msg.id !== undefined ? msg.id : idx; // using idx if no id field
+                        const msgId = msg.id !== undefined ? msg.id : idx;
                         msgDiv.onclick = function(e){
-                            // Open popup menu on single click
                             createMsgActions(msgDiv, msgId, msg.message);
                             e.stopPropagation();
                         };
@@ -133,6 +142,7 @@
                     scrollToBottom();
                 });
         }
+
         form.addEventListener("submit", e => {
             e.preventDefault();
             const text = messageInput.value.trim();
@@ -145,11 +155,23 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
+                    // Flip only if message is Happy Birthday
+                    if (/^happy\s*birthday$/i.test(text) || /^HB$/i.test(text)) {
+                        document.getElementById("flip-card").classList.add("flipped");
+                    }
                     messageInput.value = "";
                     loadMessages();
                 }
             });
         });
+
+        // Click Me button link
+        document.addEventListener("click", e => {
+            if (e.target.id === "click-me-btn") {
+                window.location.href = "https://example.com"; // replace with your URL
+            }
+        });
+
         setInterval(loadMessages, 2000);
         loadMessages();
     </script>
