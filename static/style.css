@@ -411,3 +411,42 @@ button:hover {
     z-index: 20; /* button ko sabse upar clickable banana */
     pointer-events: auto; /* clicks enable karna */
 }
+/* Ensure chat box ka position relative hai for absolute positioning */
+.chat-box {
+  position: relative; /* Agar already nahi hai to add karein */
+}
+
+/* Animated glowing card jo image me mark ki jagah dikhaye */
+.animated-card {
+  position: absolute;
+  left: 15px;       /* Adjust kar sakte ho agar exact position thodi aage ya peeche chahiye */
+  bottom: 40px;     /* Adjust karen height ko correct karne ke liye */
+  width: 70px;      /* Aapke image ka size */
+  height: 70px;
+  background: linear-gradient(45deg, #ff0090, #5a4cff);
+  border-radius: 12px;
+  box-shadow:
+    0 0 15px #ff0090,
+    0 0 35px #5a4cff;
+  animation: glowPulse 2.8s infinite;
+  opacity: 0.9;
+  z-index: 5; /* Chat messages ke upar */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow:
+      0 0 10px #ff0090,
+      0 0 30px #5a4cff;
+    opacity: 0.8;
+  }
+  50% {
+    box-shadow:
+      0 0 30px #ff0090,
+      0 0 50px #5a4cff;
+    opacity: 1;
+  }
+}
