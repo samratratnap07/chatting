@@ -35,7 +35,7 @@ header {
     background: linear-gradient(100deg,#5a4cff,#ff0090 70%);
     padding: 14px 20px;
     color: white;
-    font-size: 18px;
+    font-size: 18px; /* font size chhota kiya */
     font-family: 'Quicksand', Arial, sans-serif;
     font-weight: 600;
     letter-spacing: 1.5px;
@@ -100,6 +100,7 @@ header {
     max-width: 68%;
     position: relative;
     cursor: pointer;
+    /* animation removed (Step 1 fix) */
 }
 @keyframes fadeBubble {
     from {opacity: 0;}
@@ -265,62 +266,3 @@ button:hover {
 @media (max-width: 480px) {
     .bubble { font-size: 14px }
 }
-
-/* ========================= */
-/* 🎯 NEW Big Square Styling */
-/* ========================= */
-
-#big-square {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 280px;
-    height: 280px;
-    background: linear-gradient(135deg, #5a4cff, #ff0090);
-    border-radius: 20px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
-    display: none; /* hidden by default, show on Happy Birthday */
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 5;
-    animation: popIn 0.5s ease forwards;
-}
-
-#square-text {
-    font-family: 'Pacifico', 'Quicksand', cursive;
-    font-size: 26px;
-    color: white;
-    text-align: center;
-    margin-bottom: 18px;
-    animation: floatText 2.5s ease-in-out infinite alternate;
-}
-
-#square-btn {
-    padding: 10px 20px;
-    background: white;
-    color: #5a4cff;
-    border: none;
-    border-radius: 25px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    transition: transform 0.2s, background 0.3s;
-}
-#square-btn:hover {
-    transform: scale(1.1);
-    background: #f0f0f0;
-}
-
-/* Animations */
-@keyframes popIn {
-    from { transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
-    to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-}
-@keyframes floatText {
-    from { transform: translateY(0px); }
-    to { transform: translateY(-8px); }
-    }
-    
